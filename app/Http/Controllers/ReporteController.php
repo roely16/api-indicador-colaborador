@@ -50,6 +50,9 @@
             foreach ($items as $item) {
                 
                 $item->check = false;
+                $item->show_description = false;
+                $item->value = 0;
+                $item->editable = false;
 
             }
 
