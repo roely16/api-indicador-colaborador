@@ -12,3 +12,18 @@
 */
 
 $router->post('/login', 'LoginController@login');
+
+// Obtener el menu principal
+$router->post('/obtener_menu', 'HomeController@obtener_menu');
+
+// Obtener las areas
+$router->post('/obtener_areas', 'AreaController@obtener_areas');
+
+// Obtener los colaboradores de un area
+$router->post('/obtener_colaboradores', 'AreaController@obtener_colaboradores');
+
+// Obtener los reportes
+$router->post('/obtener_reportes', 'ReporteController@obtener_reportes');
+
+// Obtener los datos del reporte
+$router->post('/datos_reporte', 'ReporteController@datos_reporte');
