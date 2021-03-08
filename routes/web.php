@@ -27,3 +27,9 @@ $router->post('/obtener_reportes', 'ReporteController@obtener_reportes');
 
 // Obtener los datos del reporte
 $router->post('/datos_reporte', 'ReporteController@datos_reporte');
+
+// Obtener criterios para sección de mantenimiento
+$router->post('/obtener_criterios', 'CriterioController@obtener_criterios');
+
+// Obtener el detalle del criterio seleccionado
+$router->post('/detalle_criterio', 'CriterioController@detalle_criterio');
