@@ -11,7 +11,7 @@
 
         public function obtener_areas(Request $request){
 
-            $menu = Area::all();
+            $menu = Area::where('estatus', 'A')->get();
 
             return response()->json($menu);
 

@@ -33,3 +33,12 @@ $router->post('/obtener_criterios', 'CriterioController@obtener_criterios');
 
 // Obtener el detalle del criterio seleccionado
 $router->post('/detalle_criterio', 'CriterioController@detalle_criterio');
+
+// Obtener los permisos del usuario
+$router->post('/obtener_permisos_usuario', 'PermisoController@obtener_permisos_usuario');
+
+// Registrar los permisos
+$router->post('/registrar_permisos', 'PermisoController@registrar_permisos');
+
+// Obtener todos los permisos habilitados
+$router->post('/permisos_habilitados', 'PermisoController@permisos_habilitados');

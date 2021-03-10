@@ -32,6 +32,13 @@
 
             $result = $result[0];
 
+            // Buscar la sección
+            $seccion = app('db')->select("  SELECT *
+                                            FROM RH_AREAS
+                                            WHERE CODAREA = $result->codarea");
+
+            $result->seccion = $seccion[0];
+
             $data = [
                 "status" => 200,
                 "data" => $result
