@@ -48,3 +48,9 @@ $router->post('/eliminar_permisos', 'PermisoController@eliminar_permisos');
 
 // Verificar permisos
 $router->post('/verificar_permisos', 'PermisoController@verificar_permisos');
+
+// Registrar la evaluación
+$router->post('/registrar_evaluacion', 'EvaluacionController@registrar_evaluacion');
+
+// Obtener evaluaciones
+$router->post('/obtener_evaluaciones', 'EvaluacionController@obtener_evaluaciones');

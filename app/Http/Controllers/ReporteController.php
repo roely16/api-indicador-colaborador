@@ -7,6 +7,8 @@
     use App\Criterio;
     use App\CriterioItem;
 
+    use App\Ponderacion;
+
     class ReporteController extends Controller{
 
         public function obtener_reportes(Request $request){
@@ -49,6 +51,14 @@
 
             foreach ($items as $item) {
                 
+                // Si el metodo de evaluación es ponderación
+                if ($criterio->metodo_calificacion == 'ponderacion') {
+                    
+                    $item->calificaciones = Ponderacion::where('id_criterio_item', $item->id)->orderBy('valor', 'desc')->get();
+
+                    $item->calificacion = null;
+                }
+
                 $item->check = false;
                 $item->show_description = false;
                 $item->value = 0;
