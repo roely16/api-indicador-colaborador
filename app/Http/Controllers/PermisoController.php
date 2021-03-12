@@ -103,6 +103,19 @@
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT");
 
+            foreach ($colaboradores as &$colaborador) {
+                
+                $last_update = app('db')->select("  SELECT TO_CHAR(UPDATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS updated_at
+                                                    FROM RRHH_IND_PERMISO
+                                                    WHERE ID_PERSONA = '$colaborador->id_persona'
+                                                    ORDER BY ID DESC");
+
+                $last_update = $last_update[0];
+
+                $colaborador->updated_at = $last_update->updated_at;
+
+            }
+
             $headers = [
                 [
                     "text" => "Colaborador",
@@ -111,7 +124,7 @@
                 ],
                 [
                     "text" => "Fecha de actualización",
-                    "value" => "fecha",
+                    "value" => "updated_at",
                     "width" => "30%",
                     "sortable" => false
                 ],
@@ -127,6 +140,36 @@
             $data = [
                 "items" => $colaboradores,
                 "headers" => $headers
+            ];
+
+            return response()->json($data);
+
+        }
+
+        public function eliminar_permisos(Request $request){
+
+            $deleteRows = Permiso::where('id_persona', $request->id_persona)->delete();
+
+            if ($deleteRows <= 0) {
+                
+                $data = [
+
+                    "title" => "Error",
+                    "message" => "Se a generado un error al intentar eliminar los permisos",
+                    "type" => "error"
+
+                ];
+
+                return response()->json($data);
+
+            };
+
+            $data = [
+
+                "title" => "Excelente",
+                "message" => "Los permisos han sido eliminados exitosamente",
+                "type" => "success"
+
             ];
 
             return response()->json($data);

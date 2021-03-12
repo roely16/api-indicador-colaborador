@@ -42,3 +42,6 @@ $router->post('/registrar_permisos', 'PermisoController@registrar_permisos');
 
 // Obtener todos los permisos habilitados
 $router->post('/permisos_habilitados', 'PermisoController@permisos_habilitados');
+
+// Eliminar permisos
+$router->post('/eliminar_permisos', 'PermisoController@eliminar_permisos');
