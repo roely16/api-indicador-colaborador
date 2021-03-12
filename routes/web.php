@@ -45,3 +45,6 @@ $router->post('/permisos_habilitados', 'PermisoController@permisos_habilitados')
 
 // Eliminar permisos
 $router->post('/eliminar_permisos', 'PermisoController@eliminar_permisos');
+
+// Verificar permisos
+$router->post('/verificar_permisos', 'PermisoController@verificar_permisos');

@@ -176,6 +176,21 @@
 
         }
 
+        public function verificar_permisos(Request $request){
+
+            $menu = Menu::where('url', $request->url)->first();
+
+            $permiso = Permiso::where('id_persona', $request->id_persona)->where('id_menu', $menu->id)->first();
+
+            $data = [
+                "escritura" => $permiso->escritura == 'S' ? true : false,
+                "secciones" => $permiso->secciones == 'S' ? true : false
+            ];
+
+            return response()->json($data);
+
+        }
+
     }
 
 ?>
