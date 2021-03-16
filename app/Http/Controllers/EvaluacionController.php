@@ -26,7 +26,17 @@
                 $detalle_evaluacion = new DetalleEvaluacion();
                 $detalle_evaluacion->id_evaluacion = $evaluacion->id;
                 $detalle_evaluacion->id_item = $criterio["id"];
-                $detalle_evaluacion->calificacion = $criterio["valor"] * $criterio["calificacion"];
+
+                if ($request->criterio["division"] == 'S') {
+                    
+                    $detalle_evaluacion->calificacion = ($criterio["valor"] * $criterio["calificacion"]) / 100;
+
+                }else {
+
+                    $detalle_evaluacion->calificacion = $criterio["valor"] * $criterio["calificacion"];
+
+                }
+                
                 $detalle_evaluacion->save();
 
             }
@@ -68,7 +78,9 @@
 
                 }
 
-                $evaluacion->calificacion = round((round($total, 1) / $criterio->valor) * 100, 1);
+                //$total = $total / 100;
+
+                $evaluacion->calificacion = round((round($total, 1) / $criterio->valor) * 100, 2);
 
                 if ($evaluacion->calificacion >= 0 && $evaluacion->calificacion < 60) {
                    
@@ -115,7 +127,8 @@
 
             $data = [
                 "items" => $evaluaciones,
-                "headers" => $headers
+                "headers" => $headers,
+                "criterio" => $criterio
             ];
 
             return response()->json($data);

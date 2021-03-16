@@ -57,6 +57,10 @@
                     $item->calificaciones = Ponderacion::where('id_criterio_item', $item->id)->orderBy('valor', 'desc')->get();
 
                     $item->calificacion = null;
+
+                }else{
+
+                    $item->calificacion = 100;
                 }
 
                 $item->check = false;
