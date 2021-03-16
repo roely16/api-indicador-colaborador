@@ -7,6 +7,8 @@
     use App\Criterio;
     use App\Evaluacion;
     use App\DetalleEvaluacion;
+    use App\Menu;
+    use App\Permiso;
 
     class EvaluacionController extends Controller{
 
@@ -15,6 +17,7 @@
             $evaluacion = new Evaluacion();
             $evaluacion->id_criterio = $request->criterio["id"];
             $evaluacion->id_persona = $request->id_persona;
+            $evaluacion->valor_criterio = $request->criterio["valor"];
             $evaluacion->save();
 
             //$criterio = Criterio::where('modulo', $request->url)->first();
@@ -55,15 +58,38 @@
 
             $criterio = Criterio::where('modulo', $request->url)->first();
             
-            $evaluaciones = app('db')->select(" SELECT 
-                                                    T1.ID, 
-                                                    CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
-                                                    TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT
-                                                FROM RRHH_IND_EVALUACION T1
-                                                INNER JOIN RH_EMPLEADOS T2
-                                                ON T1.ID_PERSONA = T2.NIT
-                                                WHERE T1.ID_CRITERIO = $criterio->id
-                                                ORDER BY T1.ID DESC");
+            // Dependiendo del permiso mostrar todas las secciones o no
+            $menu = Menu::where('url', $request->url)->first();
+
+            $permiso = Permiso::where('id_persona', $request->nit)->where('id_menu', $menu->id)->first();
+
+            if ($permiso->secciones == 'S') {
+                
+                $evaluaciones = app('db')->select(" SELECT 
+                                                        T1.ID, 
+                                                        CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
+                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT
+                                                    FROM RRHH_IND_EVALUACION T1
+                                                    INNER JOIN RH_EMPLEADOS T2
+                                                    ON T1.ID_PERSONA = T2.NIT
+                                                    WHERE T1.ID_CRITERIO = $criterio->id
+                                                    ORDER BY T1.ID DESC");
+
+            }else{
+
+                // Buscar solo las evaluaciones de la sección del usuario
+                $evaluaciones = app('db')->select(" SELECT 
+                                                        T1.ID, 
+                                                        CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
+                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT
+                                                    FROM RRHH_IND_EVALUACION T1
+                                                    INNER JOIN RH_EMPLEADOS T2
+                                                    ON T1.ID_PERSONA = T2.NIT
+                                                    WHERE T1.ID_CRITERIO = $criterio->id
+                                                    AND T2.CODAREA = $request->codarea
+                                                    ORDER BY T1.ID DESC");
+
+            }
 
             foreach ($evaluaciones as $evaluacion) {
                 

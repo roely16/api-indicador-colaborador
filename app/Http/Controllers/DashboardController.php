@@ -53,7 +53,7 @@
 
                         }
 
-                        $criterio->calificacion = round(($total / $criterio->valor) * 100, 2);
+                        $criterio->calificacion = round(($total / $evaluacion->valor_criterio) * 100, 2);
 
                         $criterio->calificacion = $criterio->calificacion > 100 ? 100 : $criterio->calificacion;
 
@@ -71,14 +71,14 @@
 
                         }
 
+                        $empleado->total_mensual += round(($evaluacion->valor_criterio * $criterio->calificacion) / 100, 2);
+
                     }else{
 
                         $criterio->pendiente = true;
 
                     }
 
-                    
-                    $empleado->total_mensual += round(($criterio->valor * $criterio->calificacion) / 100, 2);
                     $empleado->total_anual = 50;
                     
                 }
