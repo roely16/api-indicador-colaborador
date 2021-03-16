@@ -54,7 +54,19 @@
 
             $criterio = Criterio::where('modulo', $request->url)->first();
 
-            $items = CriterioItem::where('id_criterio', $criterio->id)->get();
+            $criterio->valor = $area->iso == '1' ? $criterio->valor : $criterio->valor_no_iso;
+
+            // Obtener los criterios dependiendo si es asesor o colaborador
+
+            if ($colaborador->jefe == '1') {
+                
+                $items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_asesor', 'S')->get();
+
+            }else{
+
+                $items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_prestador', 'S')->get();
+
+            }
 
             foreach ($items as $item) {
                 
@@ -70,9 +82,22 @@
                     $item->calificacion = 100;
                 }
 
+                // Especificar cual será el valor
+                if ($area->iso == '1') {
+                    
+                    // Si es ISO seleccionar el valor dependiendo si es asesor o colaborador
+                    $item->valor = $colaborador->jefe == '1' ? $item->valor : $item->valor_p;
+
+                }else{
+
+                    // Si no es ISO asignar 
+                    $item->valor = $colaborador->jefe == '1' ? $item->valor_no_iso : $item->valor_no_iso_p;
+
+                }
+
+
                 $item->check = false;
                 $item->show_description = false;
-                $item->value = 0;
                 $item->editable = false;
 
             }

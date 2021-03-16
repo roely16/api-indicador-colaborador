@@ -25,7 +25,7 @@
                                                 ID, 
                                                 DESCRIPCION, 
                                                 TO_CHAR(VALOR, '0.99') AS VALOR, 
-                                                TO_CHAR(VALOR_ISO, '0.99') AS VALOR_ISO, 
+                                                TO_CHAR(VALOR_NO_ISO, '0.99') AS VALOR_NO_ISO, 
                                                 ID_CRITERIO,
                                                 APLICA_ASESOR,
                                                 APLICA_PRESTADOR
