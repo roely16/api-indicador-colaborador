@@ -8,6 +8,8 @@
         
         protected $table = "RH_AREAS";
 
+        protected $primaryKey = "CODAREA";
+
     }
 
 ?>

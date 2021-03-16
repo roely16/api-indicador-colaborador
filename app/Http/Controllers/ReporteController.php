@@ -6,8 +6,9 @@
 
     use App\Criterio;
     use App\CriterioItem;
-
     use App\Ponderacion;
+    use App\Empleado;
+    use App\Area;
 
     class ReporteController extends Controller{
 
@@ -45,6 +46,12 @@
 
         public function datos_reporte(Request $request){
 
+            // Obtener la información del colaborador
+            $colaborador = Empleado::where('nit', $request->nit)->first();
+
+            // Obtener la información de la sección
+            $area = Area::find($colaborador->codarea);
+
             $criterio = Criterio::where('modulo', $request->url)->first();
 
             $items = CriterioItem::where('id_criterio', $criterio->id)->get();
@@ -72,7 +79,11 @@
 
             $data = [
                 "criterio" => $criterio,
-                "items" => $items
+                "items" => $items,
+                "detalle_colaborador" => [
+                    "iso" => $area->iso,
+                    "asesor" => $colaborador->jefe
+                ]
             ];
 
             return response()->json($data);
