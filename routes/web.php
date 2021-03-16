@@ -54,3 +54,6 @@ $router->post('/registrar_evaluacion', 'EvaluacionController@registrar_evaluacio
 
 // Obtener evaluaciones
 $router->post('/obtener_evaluaciones', 'EvaluacionController@obtener_evaluaciones');
+
+// Dashboard área
+$router->post('/dashboard_area', 'DashboardController@dashboard_area');

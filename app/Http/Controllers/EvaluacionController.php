@@ -54,7 +54,7 @@
         public function obtener_evaluaciones(Request $request){
 
             $criterio = Criterio::where('modulo', $request->url)->first();
-
+            
             $evaluaciones = app('db')->select(" SELECT 
                                                     T1.ID, 
                                                     CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
@@ -78,9 +78,9 @@
 
                 }
 
-                //$total = $total / 100;
+                $evaluacion->calificacion = round(($total / $criterio->valor) * 100, 2);
 
-                $evaluacion->calificacion = round((round($total, 1) / $criterio->valor) * 100, 2);
+                $evaluacion->calificacion = $evaluacion->calificacion > 100 ? 100 : $evaluacion->calificacion;
 
                 if ($evaluacion->calificacion >= 0 && $evaluacion->calificacion < 60) {
                    
