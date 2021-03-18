@@ -12,7 +12,7 @@
         public function obtener_areas(Request $request){
 
             $menu = Area::where('estatus', 'A')->get();
-
+            
             return response()->json($menu);
 
         }
@@ -28,6 +28,23 @@
             }
 
             return response()->json($empleados);
+
+        }
+
+        public function obtener_areas_colaboradores(Request $request){
+
+            $areas = Area::where('estatus', 'A')->get();
+
+            foreach ($areas as &$area) {
+                
+                $empleados = Empleado::where('codarea', $area->codarea)->where('status', 'A')->get();
+
+                $area->empleados = $empleados;
+                $area->expand = false;
+
+            }
+
+            return response()->json($areas);
 
         }
 

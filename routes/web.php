@@ -57,3 +57,12 @@ $router->post('/obtener_evaluaciones', 'EvaluacionController@obtener_evaluacione
 
 // Dashboard área
 $router->post('/dashboard_area', 'DashboardController@dashboard_area');
+
+// Obtener todas las areas con colaboradores
+$router->post('/obtener_areas_colaboradores', 'AreaController@obtener_areas_colaboradores');
+
+// Registrar grupo
+$router->post('/registrar_grupo', 'SOController@registrar_grupo');
+
+// Obtener los grupos 
+$router->post('/obtener_grupos', 'SOController@obtener_grupos');
