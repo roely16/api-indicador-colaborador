@@ -66,3 +66,6 @@ $router->post('/registrar_grupo', 'SOController@registrar_grupo');
 
 // Obtener los grupos 
 $router->post('/obtener_grupos', 'SOController@obtener_grupos');
+
+// Agregar integrante a grupo
+$router->post('/agregar_integrante', 'SOController@agregar_integrante');
