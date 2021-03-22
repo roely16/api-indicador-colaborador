@@ -39,7 +39,16 @@
                 
                 $empleados = Empleado::where('codarea', $area->codarea)->where('status', 'A')->get();
 
+                foreach ($empleados as &$empleado) {
+                    
+                    $empleado->color_card = null;
+
+                }
+
                 $area->empleados = $empleados;
+                $area->color_card = null;
+                $area->drag = true;
+                
                 $area->expand = false;
 
             }

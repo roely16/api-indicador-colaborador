@@ -69,3 +69,6 @@ $router->post('/obtener_grupos', 'SOController@obtener_grupos');
 
 // Agregar integrante a grupo
 $router->post('/agregar_integrante', 'SOController@agregar_integrante');
+
+// Agregar una sección completa
+$router->post('/agregar_seccion', 'SOController@agregar_seccion');
