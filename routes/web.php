@@ -78,3 +78,12 @@ $router->post('/integrantes_grupo', 'SOController@integrantes_grupo');
 
 // Obtener las actividades del grupo
 $router->post('/actividades_grupo', 'SOController@actividades_grupo');
+
+// Registrar actividad
+$router->post('/registrar_actividad', 'SOController@registrar_actividad');
+
+// Asignar actividad
+$router->post('/asignar_actividad', 'SOController@asignar_actividad');
+
+// Calificar responsable
+$router->post('/calificar_responsable', 'SOController@calificar_responsable');

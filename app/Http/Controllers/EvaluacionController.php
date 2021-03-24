@@ -68,7 +68,8 @@
                 $evaluaciones = app('db')->select(" SELECT 
                                                         T1.ID, 
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
-                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT
+                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT,
+                                                        T1.VALOR_CRITERIO
                                                     FROM RRHH_IND_EVALUACION T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
@@ -81,7 +82,8 @@
                 $evaluaciones = app('db')->select(" SELECT 
                                                         T1.ID, 
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
-                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT
+                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
+                                                        T1.VALOR_CRITERIO
                                                     FROM RRHH_IND_EVALUACION T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
@@ -104,7 +106,7 @@
 
                 }
 
-                $evaluacion->calificacion = round(($total / $criterio->valor) * 100, 2);
+                $evaluacion->calificacion = round(($total / $evaluacion->valor_criterio) * 100, 2);
 
                 $evaluacion->calificacion = $evaluacion->calificacion > 100 ? 100 : $evaluacion->calificacion;
 
