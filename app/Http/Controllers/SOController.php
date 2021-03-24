@@ -167,6 +167,55 @@
 
         }
 
+        public function integrantes_grupo(Request $request){
+
+            // Buscar los integrantes del grupo
+            $secciones = app('db')->select("    SELECT 
+                                                    DISTINCT(CODAREA) AS CODAREA
+                                                FROM RH_EMPLEADOS T1
+                                                INNER JOIN RRHH_IND_INT_GRUPO T2
+                                                ON T1.NIT = T2.ID_PERSONA
+                                                AND T2.ID_GRUPO = $request->id_grupo");
+
+            foreach ($secciones as &$seccion) {
+
+                $area = Area::find($seccion->codarea);
+
+                $seccion->nombre = $area->descripcion;
+                $seccion->expand = false;
+                $seccion->check = false;
+
+                /* Buscar los integrantes de la sección y del grupo */
+
+                $integrantes = app('db')->select("  SELECT 
+                                                        CONCAT(T1.NOMBRE, CONCAT(' ', T1.APELLIDO)) AS NOMBRE, 
+                                                        T1.NIT
+                                                    FROM RH_EMPLEADOS T1
+                                                    INNER JOIN RRHH_IND_INT_GRUPO T2
+                                                    ON T1.NIT = T2.ID_PERSONA
+                                                    AND T2.ID_GRUPO = $request->id_grupo
+                                                    AND T1.CODAREA = $seccion->codarea");
+                
+                foreach ($integrantes as &$integrante) {
+                        
+                    $integrante->check = false;
+
+                }
+
+                $seccion->integrantes = $integrantes;
+
+            }
+
+            return response()->json($secciones);
+
+        }
+
+        public function actividades_grupo(Request $request){
+
+            return response()->json($request);
+
+        }
+
     }
 
 ?>

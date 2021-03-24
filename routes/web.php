@@ -72,3 +72,9 @@ $router->post('/agregar_integrante', 'SOController@agregar_integrante');
 
 // Agregar una sección completa
 $router->post('/agregar_seccion', 'SOController@agregar_seccion');
+
+// Obtener el detalle de un grupo
+$router->post('/integrantes_grupo', 'SOController@integrantes_grupo');
+
+// Obtener las actividades del grupo
+$router->post('/actividades_grupo', 'SOController@actividades_grupo');
