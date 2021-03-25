@@ -30,56 +30,64 @@
                 // Por cada uno de los criterios 
                 foreach ($empleado->criterios as &$criterio) {
                     
-                    // Buscar la última evaluación según el criterio
-                    $evaluacion = app('db')->select("   SELECT *
-                                                        FROM RRHH_IND_EVALUACION
-                                                        WHERE ID_CRITERIO = $criterio->id
-                                                        AND ID_PERSONA = '$empleado->nit'
-                                                        AND TO_CHAR(CREATED_AT, 'MM') = '$month'");
-
-                    if ($evaluacion) {
+                    if (!$criterio->funcion_calculo) {
                         
-                        // Calcular la calificación
+                        // Buscar la última evaluación según el criterio
+                        $evaluacion = app('db')->select("   SELECT *
+                                                            FROM RRHH_IND_EVALUACION
+                                                            WHERE ID_CRITERIO = $criterio->id
+                                                            AND ID_PERSONA = '$empleado->nit'
+                                                            AND TO_CHAR(CREATED_AT, 'MM') = '$month'");
 
-                        $evaluacion = $evaluacion[0];
-
-                        $detalle = DetalleEvaluacion::where('id_evaluacion', $evaluacion->id)->get();
-
-                        $total = 0;
-
-                        foreach ($detalle as $item) {
+                        if ($evaluacion) {
                             
-                            $total += $item->calificacion;
+                            // Calcular la calificación
 
-                        }
+                            $evaluacion = $evaluacion[0];
 
-                        $criterio->calificacion = round(($total / $evaluacion->valor_criterio) * 100, 2);
+                            $detalle = DetalleEvaluacion::where('id_evaluacion', $evaluacion->id)->get();
 
-                        $criterio->calificacion = $criterio->calificacion > 100 ? 100 : $criterio->calificacion;
+                            $total = 0;
 
-                        if ($criterio->calificacion >= 0 && $criterio->calificacion < 60) {
-                        
-                            $criterio->color = 'red';
+                            foreach ($detalle as $item) {
+                                
+                                $total += $item->calificacion;
 
-                        }elseif( $criterio->calificacion >= 60 && $criterio->calificacion < 80){
+                            }
 
-                            $criterio->color = 'orange';
+                            $criterio->calificacion = round(($total / $evaluacion->valor_criterio) * 100, 2);
+
+                            $criterio->calificacion = $criterio->calificacion > 100 ? 100 : $criterio->calificacion;
+
+                            if ($criterio->calificacion >= 0 && $criterio->calificacion < 60) {
+                            
+                                $criterio->color = 'red';
+
+                            }elseif( $criterio->calificacion >= 60 && $criterio->calificacion < 80){
+
+                                $criterio->color = 'orange';
+
+                            }else{
+
+                                $criterio->color = 'green';
+
+                            }
+
+                            $empleado->total_mensual += round(($evaluacion->valor_criterio * $criterio->calificacion) / 100, 2);
 
                         }else{
 
-                            $criterio->color = 'green';
+                            $criterio->pendiente = true;
 
                         }
 
-                        $empleado->total_mensual += round(($evaluacion->valor_criterio * $criterio->calificacion) / 100, 2);
+                        $empleado->total_anual = 50;
 
                     }else{
 
-                        $criterio->pendiente = true;
+                        //$criterio->pendiente = true;
 
                     }
-
-                    $empleado->total_anual = 50;
                     
                 }
 
@@ -88,6 +96,12 @@
             }
 
             return response()->json($empleados);
+
+        }
+        
+        public function performance($colaborador){
+
+
 
         }
 

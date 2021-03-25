@@ -87,3 +87,9 @@ $router->post('/asignar_actividad', 'SOController@asignar_actividad');
 
 // Calificar responsable
 $router->post('/calificar_responsable', 'SOController@calificar_responsable');
+
+// Obtener las evaluaciones de desempeño
+$router->post('/obtener_evaluaciones_performance', 'PerformanceController@obtener_evaluaciones');
+
+// Obtener las temporadas
+$router->post('/obtener_temporadas', 'PerformanceController@obtener_temporadas');
