@@ -85,8 +85,6 @@
 
                     }else{
 
-                        //$criterio->pendiente = true;
-
                         $data = [
                             "colaborador" => $empleado,
                             "criterio" => $criterio
@@ -97,7 +95,12 @@
                         $criterio->color = $result["color"];
                         $criterio->calificacion = $result["calificacion"];
 
-                        //return response()->json($result);
+                        /*
+                            TODO
+                            - Tomar el valor del criterio si es ISO o no
+                        */
+
+                        $empleado->total_mensual += round(($criterio->valor * $criterio->calificacion) / 100, 2);
 
                     }
                     
