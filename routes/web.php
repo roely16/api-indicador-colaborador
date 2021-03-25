@@ -93,3 +93,9 @@ $router->post('/obtener_evaluaciones_performance', 'PerformanceController@obtene
 
 // Obtener las temporadas
 $router->post('/obtener_temporadas', 'PerformanceController@obtener_temporadas');
+
+// Detalle del grupo
+$router->post('/detalle_grupo', 'SOController@detalle_grupo');
+
+// Editar el grupo
+$router->post('/editar_grupo', 'SOController@editar_grupo');

@@ -20,7 +20,14 @@
             $grupo->nombre = $request->nombre;
             $grupo->save();
 
-            return response()->json($grupo);
+            $data = [
+                "status" => 200,
+                "title" => "Excelente!",
+                "message" => "El grupo a sido creado exitosamente",
+                "type" => "success"
+            ];
+
+            return response()->json($data);
 
         }
 
@@ -288,6 +295,32 @@
             $result = app('db')->table('RRHH_IND_ACTIVIDAD_RESPONSABLE')->where('id_actividad', $request->id_actividad)->where('id_persona', $request->nit)->update(['cumplio' => $request->cumplio]);
 
             return response()->json($result);
+
+        }
+
+        public function detalle_grupo(Request $request){
+
+            $grupo = Grupo::find($request->id_grupo);
+
+            return response()->json($grupo);
+
+        }
+
+        public function editar_grupo(Request $request){
+
+            $grupo = Grupo::find($request->id);
+
+            $grupo->nombre = $request->nombre;
+            $grupo->save();
+
+            $data = [
+                "status" => 200,
+                "title" => "Excelente!",
+                "message" => "El grupo a sido actualizado exitosamente",
+                "type" => "success"
+            ];
+
+            return response()->json($data);
 
         }
     }
