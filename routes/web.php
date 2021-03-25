@@ -99,3 +99,6 @@ $router->post('/detalle_grupo', 'SOController@detalle_grupo');
 
 // Editar el grupo
 $router->post('/editar_grupo', 'SOController@editar_grupo');
+
+// Eliminar grupo
+$router->post('/eliminar_grupo', 'SOController@eliminar_grupo');

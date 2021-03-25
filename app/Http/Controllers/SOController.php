@@ -69,6 +69,7 @@
                 $grupo->expand = false;
                 $grupo->secciones = $secciones;
                 $grupo->color_card = null;
+                $grupo->deleting = false;
 
             }
 
@@ -319,6 +320,28 @@
                 "message" => "El grupo a sido actualizado exitosamente",
                 "type" => "success"
             ];
+
+            return response()->json($data);
+
+        }
+
+        public function eliminar_grupo(Request $request){
+
+            $grupo = Grupo::find($request->id_grupo);
+            $result = $grupo->delete();
+
+            if ($result) {
+                
+                $data = [
+
+                    "status" => 200,
+                    "title" => "Excelente!",
+                    "message" => "El grupo a sido eliminado exitosamente",
+                    "type" => "success"
+
+                ];
+
+            }
 
             return response()->json($data);
 
