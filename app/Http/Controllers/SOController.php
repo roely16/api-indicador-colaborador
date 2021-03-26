@@ -148,6 +148,22 @@
                     $integrante->id_persona = $colaborador["nit"];
                     $integrante->save();
 
+                    // Obtener al colaborador
+                    $empleado = Empleado::where('nit', $integrante->id_persona)->first();
+
+                    // Obtener la sección
+                    $seccion = Area::find($empleado->codarea);
+
+                    // Obtener al colaborador
+                    $integrantes = app('db')->select("  SELECT 
+                                                            CONCAT(T1.NOMBRE, CONCAT(' ', T1.APELLIDO)) AS NOMBRE, 
+                                                            T1.NIT
+                                                        FROM RH_EMPLEADOS T1
+                                                        INNER JOIN RRHH_IND_INT_GRUPO T2
+                                                        ON T1.NIT = T2.ID_PERSONA
+                                                        AND T2.ID_GRUPO = $request->id_grupo
+                                                        AND T1.CODAREA = $seccion->codarea");
+
                     $i++;
 
                 }
@@ -158,8 +174,15 @@
                 
                 // Retornar el grupo
 
+                $data_seccion = [
+                    "codarea" => $seccion->codarea,
+                    "nombre" => $seccion->descripcion,
+                    "integrantes" => $integrantes
+                ];
+
                 $data = [
                     "status" => 200,
+                    "data" => $data_seccion
                 ];
 
             }else{
