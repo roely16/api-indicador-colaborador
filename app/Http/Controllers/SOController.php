@@ -39,7 +39,7 @@
                 
                 // Buscar los integrantes del grupo
                 $secciones = app('db')->select("    SELECT 
-                                                        DISTINCT(CODAREA) AS CODAREA
+                                                        DISTINCT(CODAREA) AS ID
                                                     FROM RH_EMPLEADOS T1
                                                     INNER JOIN RRHH_IND_INT_GRUPO T2
                                                     ON T1.NIT = T2.ID_PERSONA
@@ -47,22 +47,22 @@
 
                 foreach ($secciones as &$seccion) {
                     
-                    $area = Area::find($seccion->codarea);
+                    $area = Area::find($seccion->id);
 
-                    $seccion->nombre = $area->descripcion;
+                    $seccion->name = $area->descripcion;
 
                     /* Buscar los integrantes de la sección y del grupo */
 
                     $integrantes = app('db')->select("  SELECT 
-                                                            CONCAT(T1.NOMBRE, CONCAT(' ', T1.APELLIDO)) AS NOMBRE, 
-                                                            T1.NIT
+                                                            CONCAT(T1.NOMBRE, CONCAT(' ', T1.APELLIDO)) AS NAME, 
+                                                            T1.NIT AS ID
                                                         FROM RH_EMPLEADOS T1
                                                         INNER JOIN RRHH_IND_INT_GRUPO T2
                                                         ON T1.NIT = T2.ID_PERSONA
                                                         AND T2.ID_GRUPO = $grupo->id
-                                                        AND T1.CODAREA = $seccion->codarea");
+                                                        AND T1.CODAREA = $seccion->id");
 
-                    $seccion->integrantes = $integrantes;
+                    $seccion->children = $integrantes;
 
                 }
 
@@ -70,6 +70,8 @@
                 $grupo->secciones = $secciones;
                 $grupo->color_card = null;
                 $grupo->deleting = false;
+                $grupo->deleting_integrante = false;
+                $grupo->tree_select = [];
 
             }
 
@@ -98,8 +100,8 @@
 
                 // Obtener los integrantes
                 $integrantes = app('db')->select("  SELECT 
-                                                        CONCAT(T1.NOMBRE, CONCAT(' ', T1.APELLIDO)) AS NOMBRE, 
-                                                        T1.NIT
+                                                        CONCAT(T1.NOMBRE, CONCAT(' ', T1.APELLIDO)) AS NAME, 
+                                                        T1.NIT AS ID
                                                     FROM RH_EMPLEADOS T1
                                                     INNER JOIN RRHH_IND_INT_GRUPO T2
                                                     ON T1.NIT = T2.ID_PERSONA
@@ -107,9 +109,9 @@
                                                     AND T1.CODAREA = $seccion->codarea");
 
                 $data_seccion = [
-                    "codarea" => $seccion->codarea,
-                    "nombre" => $seccion->descripcion,
-                    "integrantes" => $integrantes
+                    "id" => $seccion->codarea,
+                    "name" => $seccion->descripcion,
+                    "children" => $integrantes
                 ];
 
                 $data = [
@@ -156,8 +158,8 @@
 
                     // Obtener al colaborador
                     $integrantes = app('db')->select("  SELECT 
-                                                            CONCAT(T1.NOMBRE, CONCAT(' ', T1.APELLIDO)) AS NOMBRE, 
-                                                            T1.NIT
+                                                            CONCAT(T1.NOMBRE, CONCAT(' ', T1.APELLIDO)) AS NAME, 
+                                                            T1.NIT AS ID
                                                         FROM RH_EMPLEADOS T1
                                                         INNER JOIN RRHH_IND_INT_GRUPO T2
                                                         ON T1.NIT = T2.ID_PERSONA
@@ -175,9 +177,9 @@
                 // Retornar el grupo
 
                 $data_seccion = [
-                    "codarea" => $seccion->codarea,
-                    "nombre" => $seccion->descripcion,
-                    "integrantes" => $integrantes
+                    "id" => $seccion->codarea,
+                    "name" => $seccion->descripcion,
+                    "children" => $integrantes
                 ];
 
                 $data = [
@@ -367,6 +369,18 @@
             }
 
             return response()->json($data);
+
+        }
+
+        public function eliminar_integrantes(Request $request){
+
+            foreach ($request->integrantes as $integrante) {
+                
+                $result = app('db')->table('RRHH_IND_INT_GRUPO')->where('id_grupo', $request->id_grupo)->where('id_persona', $integrante)->delete();
+
+            }
+
+            return response()->json($request);
 
         }
     }

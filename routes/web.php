@@ -102,3 +102,6 @@ $router->post('/editar_grupo', 'SOController@editar_grupo');
 
 // Eliminar grupo
 $router->post('/eliminar_grupo', 'SOController@eliminar_grupo');
+
+// Eliminar integrantes
+$router->post('/eliminar_integrantes', 'SOController@eliminar_integrantes');
