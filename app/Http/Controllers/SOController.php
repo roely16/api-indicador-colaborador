@@ -297,7 +297,14 @@
             $actividad->id_grupo = $request->id_grupo;
             $actividad->save();
 
-            return response()->json($actividad);
+            $data = [
+                "status" => 200,
+                "title" => "Excelente!",
+                "message" => "La actividad a sido creada exitosamente",
+                "type" => "success"
+            ];
+
+            return response()->json($data);
 
         }
         
@@ -383,6 +390,66 @@
             return response()->json($request);
 
         }
+
+        public function eliminar_actividad(Request $request){
+
+            $actividad = Actividad::find($request->id_actividad);
+            $result = $actividad->delete();
+
+            if ($result) {
+                
+                $data = [
+
+                    "status" => 200,
+                    "title" => "Excelente!",
+                    "message" => "La actividad a sido eliminada exitosamente",
+                    "type" => "success"
+
+                ];
+
+            }
+
+            return response()->json($data);
+
+        }
+
+        public function detalle_actividad(Request $request){
+
+            $actividad = app('db')->select("    SELECT 
+                                                    ID, 
+                                                    NOMBRE, 
+                                                    TO_CHAR(FECHA_CUMPLIMIENTO, 'YYYY-MM-DD') AS FECHA,
+                                                    ID_GRUPO
+                                                FROM RRHH_IND_ACTIVIDAD
+                                                WHERE ID = $request->id_actividad");
+
+            return response()->json($actividad[0]);
+
+        }
+
+        public function editar_actividad(Request $request){
+
+            $actividad = Actividad::find($request->id);
+
+            $actividad->nombre = $request->nombre;
+            $actividad->fecha_cumplimiento = $request->fecha;
+            $result = $actividad->save();
+
+            if ($result) {
+                
+                $data = [
+                    "status" => 200,
+                    "title" => "Excelente!",
+                    "message" => "La actividad a sido actualizada exitosamente",
+                    "type" => "success"
+                ];
+
+            }
+
+            return response()->json($data);
+
+        }
+        
     }
 
 ?>

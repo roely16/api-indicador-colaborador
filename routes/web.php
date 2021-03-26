@@ -105,3 +105,12 @@ $router->post('/eliminar_grupo', 'SOController@eliminar_grupo');
 
 // Eliminar integrantes
 $router->post('/eliminar_integrantes', 'SOController@eliminar_integrantes');
+
+// Eliminar actividad
+$router->post('/eliminar_actividad', 'SOController@eliminar_actividad');
+
+// Detalles de la actividad
+$router->post('/detalle_actividad', 'SOController@detalle_actividad');
+
+// Editar actividad
+$router->post('/editar_actividad', 'SOController@editar_actividad');
