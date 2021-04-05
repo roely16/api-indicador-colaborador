@@ -114,3 +114,12 @@ $router->post('/detalle_actividad', 'SOController@detalle_actividad');
 
 // Editar actividad
 $router->post('/editar_actividad', 'SOController@editar_actividad');
+
+// Eliminar evaluación
+$router->post('/eliminar_evaluacion', 'EvaluacionController@eliminar_evaluacion');
+
+// Detalle del reporte
+$router->post('/detalle_reporte', 'ReporteController@detalle_reporte');
+
+// Editar evaluación
+$router->post('/editar_evaluacion', 'EvaluacionController@editar_evaluacion');

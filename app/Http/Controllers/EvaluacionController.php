@@ -67,6 +67,7 @@
                 
                 $evaluaciones = app('db')->select(" SELECT 
                                                         T1.ID, 
+                                                        T1.ID_PERSONA,
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT,
                                                         T1.VALOR_CRITERIO
@@ -81,6 +82,7 @@
                 // Buscar solo las evaluaciones de la sección del usuario
                 $evaluaciones = app('db')->select(" SELECT 
                                                         T1.ID, 
+                                                        T1.ID_PERSONA,
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
                                                         T1.VALOR_CRITERIO
@@ -158,6 +160,65 @@
                 "headers" => $headers,
                 "criterio" => $criterio
             ];
+
+            return response()->json($data);
+
+        }
+
+        public function eliminar_evaluacion(Request $request){
+
+            $evaluacion = Evaluacion::find($request->id);
+            $result = $evaluacion->delete();
+
+            if ($result) {
+                
+                $data = [
+                    "status" => 200,
+                    "title" => "Excelente",
+                    "message" => "La evaluación a sido eliminada exitosamente",
+                    "type" => "success"
+                ];
+
+            }
+
+            return response()->json($data);
+
+        }
+
+        public function editar_evaluacion(Request $request){
+
+            // Eliminar los registros anteriores de la evaluación
+            foreach ($request->items as $item) {
+                
+                //$detalle_evaluacion = DetalleEvaluacion::where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->first();
+
+                $calificacion = 0;
+
+                if ($request->criterio["division"] == 'S') {
+
+                    $calificacion = ($item["valor"] * $item["calificacion"]) / 100;
+
+                }else{
+
+                    $calificacion = $item["valor"] * $item["calificacion"];
+
+                }
+
+                $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion]);
+
+
+            }
+
+            if ($result) {
+                
+                $data = [
+                    "status" => 200,
+                    "title" => "Excelente",
+                    "message" => "La evaluación a sido actualizada exitosamente",
+                    "type" => "success"
+                ];
+
+            }
 
             return response()->json($data);
 
