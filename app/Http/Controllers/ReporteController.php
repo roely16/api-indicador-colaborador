@@ -81,7 +81,27 @@
 
                 }else{
 
-                    $item->calificacion = 100;
+                    // Validar si se obtiene la calificación desde otra función
+
+                    if ($item->funcion_calculo) {
+                        
+                        $data = [
+                            "usuario" => $colaborador->usuario
+                        ];
+
+                        $result = $this->{$item->funcion_calculo}($data);
+
+                        $item->calificacion = $result["calificacion"];
+                        $item->editable = $result["editable"];
+                        $item->info_calculo = $result["info_calculo"];
+
+                    }else{
+
+                        $item->calificacion = 100;
+                        $item->editable = true;
+
+                    }
+
                 }
 
                 // Especificar cual será el valor
@@ -100,7 +120,6 @@
 
                 $item->check = false;
                 $item->show_description = false;
-                $item->editable = false;
 
             }
 
@@ -162,7 +181,24 @@
 
                 }else{
 
-                    $item->calificacion = 100;
+                    $item->detalle_evaluacion = DetalleEvaluacion::where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item->id)->first();
+
+                    $valor_item = 0;
+
+                    // Especificar cual será el valor
+                    if ($area->iso == '1') {
+                        
+                        // Si es ISO seleccionar el valor dependiendo si es asesor o colaborador
+                        $valor_item = $colaborador->jefe == '1' ? $item->valor : $item->valor_p;
+
+                    }else{
+
+                        // Si no es ISO asignar 
+                        $valor_item = $colaborador->jefe == '1' ? $item->valor_no_iso : $item->valor_no_iso_p;
+
+                    }
+
+                    $item->calificacion = ($item->detalle_evaluacion->calificacion / $valor_item) * 100;
                 }
 
                 // Especificar cual será el valor
@@ -196,6 +232,47 @@
             ];
 
             return response()->json($data);
+
+        }
+
+        public function quejas($data){
+
+            $usuario = $data["usuario"];
+
+            $quejas = app('db')->select("   SELECT COUNT(*) AS TOTAL
+                                            FROM SQ_QUEJA
+                                            WHERE DIRIGIDO_A = '$usuario'
+                                            AND CLASIFICACION = 'QUEJA'");
+
+            $total = $quejas[0]->total;
+
+            $calificacion = 100;
+
+            if ($total >= 1 && $total <= 3) {
+                
+                $calificacion = 90;
+
+            }elseif($total >= 4 && $total <= 7){
+
+                $calificacion = 75;
+
+            }elseif($total >= 8 && $total <= 10){
+
+                $calificacion = 25;
+
+            }elseif($total > 10){
+
+                $calificacion = 0;
+
+            }
+
+            $data = [
+                "calificacion" => $calificacion,
+                "editable" => false,
+                "info_calculo" => "Cálculo realizado en base a la información obtenida del módulo de quejas."
+            ];
+
+            return $data;
 
         }
 
