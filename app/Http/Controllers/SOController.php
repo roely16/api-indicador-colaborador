@@ -279,7 +279,7 @@
                 $actividad->responsables = $responsables;
 
                 $actividad->check = false;
-                $actividad->calificar = true;
+                $actividad->calificar = false;
                 $actividad->expand = false;
 
             }
@@ -310,6 +310,8 @@
         
         public function asignar_actividad(Request $request){
             
+            $personas = [];
+
             foreach ($request->personas as $persona) {
                 
                 $actividad_responsable = new ActividadResponsable();
@@ -317,9 +319,24 @@
                 $actividad_responsable->id_persona = $persona["nit"];
                 $actividad_responsable->save();
 
+                $nit = $persona["nit"];
+
+                $personas [] = app('db')->select("  SELECT 
+                                                    T2.*, 
+                                                    T1.CUMPLIO
+                                                FROM RRHH_IND_ACTIVIDAD_RESPONSABLE T1
+                                                INNER JOIN RH_EMPLEADOS T2
+                                                ON T1.ID_PERSONA = T2.NIT
+                                                WHERE T1.ID_ACTIVIDAD = $request->id_actividad
+                                                AND T2.NIT = '$nit'");
             }
 
-            return response()->json($request);
+            $data = [
+                "personas" => $personas,
+                "id_actividad" => $request->id_actividad
+            ];
+
+            return response()->json($data);
 
         }
 
@@ -327,7 +344,22 @@
 
             $result = app('db')->table('RRHH_IND_ACTIVIDAD_RESPONSABLE')->where('id_actividad', $request->id_actividad)->where('id_persona', $request->nit)->update(['cumplio' => $request->cumplio]);
 
-            return response()->json($result);
+            // Retornar al responsable para actualizar
+
+            $responsable = app('db')->select("  SELECT 
+                                                    T2.*, 
+                                                    T1.CUMPLIO
+                                                FROM RRHH_IND_ACTIVIDAD_RESPONSABLE T1
+                                                INNER JOIN RH_EMPLEADOS T2
+                                                ON T1.ID_PERSONA = T2.NIT
+                                                WHERE T1.ID_ACTIVIDAD = $request->id_actividad
+                                                AND T2.NIT = '$request->nit'");
+
+            $data = [
+                "responsable" => $responsable[0]
+            ];
+
+            return response()->json($data);
 
         }
 
