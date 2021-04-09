@@ -214,6 +214,112 @@
 
         }
 
+        public function sso($data){
+
+            // Mes actual
+            $month = date('m/Y');
+
+            $colaborador = $data["colaborador"];
+
+            $result = app('db')->select("   SELECT 
+                                                COUNT(*) AS TOTAL, 
+                                                SUM(CASE WHEN CUMPLIO = 'S' THEN 1 ELSE 0 END) AS CUMPLIO
+                                            FROM RRHH_IND_ACTIVIDAD_RESPONSABLE
+                                            WHERE ID_PERSONA = '$colaborador->nit'
+                                            AND TO_CHAR(CREATED_AT, 'MM/YYYY') = '$month'");
+
+            if ($result) {
+                
+                $total = $result[0]->total;
+                $cumplio = $result[0]->cumplio;
+
+                if ($cumplio) {
+                    
+                    $colaborador->calificacion = ($cumplio / $total) * 100;
+
+                }else{
+
+                    $colaborador->calificacion = 0;
+
+                }
+
+            }else{
+
+                $colaborador->calificacion = 0;
+
+            }
+
+            // Asignar un color
+
+            if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
+
+                $colaborador->color = 'red';
+
+            }elseif( $colaborador->calificacion >= 60 && $colaborador->calificacion < 80){
+
+                $colaborador->color = 'orange';
+
+            }else{
+
+                $colaborador->color = 'green';
+
+            }
+
+            return $colaborador;
+
+        }
+
+        public function convivencia($data){
+
+            // Mes actual
+            $month = date('m/Y');
+
+            $colaborador = $data["colaborador"];
+
+            $result = app('db')->select("   SELECT 
+                                                COUNT(*) AS TOTAL 
+                                            FROM RC_RECORD
+                                            WHERE NIT = '$colaborador->nit'
+                                            AND ID_TIPO IN (7,8)
+                                            AND TO_CHAR(FECHA, 'MM/YYYY') = '$month'");
+
+            $colaborador->calificacion = 100;
+
+            if ($result) {
+                
+                $total = $result[0]->total;
+
+                if ($total) {
+                    
+                    // Bajar un 18.75% equivalente al 3% 
+                    $colaborador->calificacion = 100 - (18.75 * $total);
+
+                }else{
+
+                    $colaborador->calificacion = 100;
+
+                }
+
+            }
+
+            if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
+
+                $colaborador->color = 'red';
+
+            }elseif( $colaborador->calificacion >= 60 && $colaborador->calificacion < 80){
+
+                $colaborador->color = 'orange';
+
+            }else{
+
+                $colaborador->color = 'green';
+
+            }
+
+            return $colaborador;
+
+        }
+
     }
 
 ?>

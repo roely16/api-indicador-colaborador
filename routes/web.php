@@ -123,3 +123,9 @@ $router->post('/detalle_reporte', 'ReporteController@detalle_reporte');
 
 // Editar evaluación
 $router->post('/editar_evaluacion', 'EvaluacionController@editar_evaluacion');
+
+// Eliminar responsable de actividad
+$router->post('/eliminar_responsable_actividad', 'SOController@eliminar_responsable_actividad');
+
+// Obtener el perfil de un colaborador
+$router->post('/obtener_perfil', 'CompetenciaController@obtener_perfil');

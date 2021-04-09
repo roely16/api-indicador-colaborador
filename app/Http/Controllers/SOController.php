@@ -481,6 +481,29 @@
             return response()->json($data);
 
         }
+
+        public function eliminar_responsable_actividad(Request $request){
+
+            $result = app('db')->table('RRHH_IND_ACTIVIDAD_RESPONSABLE')->where('ID_ACTIVIDAD', $request->id_actividad)->where('ID_PERSONA', $request->nit)->delete();
+
+            if ($result) {
+                
+                $data = [
+                    "status" => 200,
+                    "title" => "Excelente!",
+                    "message" => "La actividad a sido eliminada exitosamente",
+                    "type" => "success",
+                    "data" => [
+                        "id_actividad" => $request->id_actividad,
+                        "responsable" => $request->nit
+                    ]
+                ];
+
+            }
+            
+            return response()->json($data);
+
+        }
         
     }
 
