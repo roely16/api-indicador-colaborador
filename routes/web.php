@@ -129,3 +129,18 @@ $router->post('/eliminar_responsable_actividad', 'SOController@eliminar_responsa
 
 // Obtener el perfil de un colaborador
 $router->post('/obtener_perfil', 'CompetenciaController@obtener_perfil');
+
+// Registrar evaluación de competencias
+$router->post('/registrar_evaluacion_competencia', 'CompetenciaController@registrar_evaluacion');
+
+// Detalle de la evaluación de competencias
+$router->post('/detalle_evaluacion_competencia', 'CompetenciaController@detalle_evaluacion');
+
+// Editar evaluación de competencias
+$router->post('/editar_evaluacion_competencia', 'CompetenciaController@editar_evaluacion');
+
+// Eliminar evaluación de competencias
+$router->post('/eliminar_evaluacion_competencia', 'CompetenciaController@eliminar_evaluacion');
+
+// Obtener las evaluaciones
+$router->post('/obtener_evaluaciones_competencia', 'CompetenciaController@obtener_evaluaciones');

@@ -320,6 +320,46 @@
 
         }
 
+        public function competencia($data){
+
+            // Mes actual
+            $month = date('m/Y');
+
+            $colaborador = $data["colaborador"];
+
+            $result = app('db')->select("   SELECT *
+                                            FROM RRHH_IND_EVA_COMPETENCIA
+                                            WHERE ID_PERSONA = '$colaborador->nit'");
+
+            if ($result) {
+                
+                $colaborador->calificacion = $result[0]->calificacion;
+
+            }else{
+
+                $colaborador->calificacion = 0;
+
+            }
+
+            if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
+
+                $colaborador->color = 'red';
+
+            }elseif( $colaborador->calificacion >= 60 && $colaborador->calificacion < 80){
+
+                $colaborador->color = 'orange';
+
+            }else{
+
+                $colaborador->color = 'green';
+
+            }
+
+            return $colaborador;
+
+
+        }
+
     }
 
 ?>

@@ -18,6 +18,7 @@
             $evaluacion->id_criterio = $request->criterio["id"];
             $evaluacion->id_persona = $request->id_persona;
             $evaluacion->valor_criterio = $request->criterio["valor"];
+            $evaluacion->mes = $request->month;
             $evaluacion->save();
 
             //$criterio = Criterio::where('modulo', $request->url)->first();
@@ -68,6 +69,7 @@
                 $evaluaciones = app('db')->select(" SELECT 
                                                         T1.ID, 
                                                         T1.ID_PERSONA,
+                                                        T1.MES,
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT,
                                                         T1.VALOR_CRITERIO
@@ -83,6 +85,7 @@
                 $evaluaciones = app('db')->select(" SELECT 
                                                         T1.ID, 
                                                         T1.ID_PERSONA,
+                                                        T1.MES,
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
                                                         T1.VALOR_CRITERIO
@@ -95,8 +98,12 @@
 
             }
 
+            
             foreach ($evaluaciones as $evaluacion) {
-                
+                                
+                // Formato del mes y año
+                //$evaluacion->mes = date('F Y', strtotime($evaluacion->mes));
+
                 // Obtener el detalle de la evaluación
                 $detalle = DetalleEvaluacion::where('id_evaluacion', $evaluacion->id)->get();
 
@@ -132,12 +139,17 @@
                 [
                     "text" => "Colaborador",
                     "value" => "colaborador",
-                    "width" => "40%"
+                    "width" => "35%"
                 ],
                 [
-                    "text" => "Fecha",
+                    "text" => "Fecha de Registro",
                     "value" => "created_at",
-                    "width" => "30%"
+                    "width" => "25%"
+                ],
+                [
+                    "text" => "Mes",
+                    "value" => "mes",
+                    "width" => "10%"
                 ],
                 [
                     "text" => "Calificación",
@@ -186,6 +198,11 @@
         }
 
         public function editar_evaluacion(Request $request){
+
+            $evaluacion = Evaluacion::find($request->id_evaluacion);
+            $evaluacion->mes = $request->month;
+            $evaluacion->save();
+
 
             // Eliminar los registros anteriores de la evaluación
             foreach ($request->items as $item) {

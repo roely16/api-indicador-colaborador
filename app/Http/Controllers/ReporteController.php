@@ -87,7 +87,8 @@
                         
                         $data = [
                             "usuario" => $colaborador->usuario,
-                            "nit" => $colaborador->nit
+                            "nit" => $colaborador->nit,
+                            "month" => $request->month
                         ];
 
                         $result = $this->{$item->funcion_calculo}($data);
@@ -239,11 +240,13 @@
         public function quejas($data){
 
             $usuario = $data["usuario"];
+            $month = $data["month"];
 
             $quejas = app('db')->select("   SELECT COUNT(*) AS TOTAL
                                             FROM SQ_QUEJA
                                             WHERE DIRIGIDO_A = '$usuario'
-                                            AND CLASIFICACION = 'QUEJA'");
+                                            AND CLASIFICACION = 'QUEJA'
+                                            AND TO_CHAR(FECHA_QUEJA, 'YYYY-MM') = '$month'");
 
             $total = $quejas[0]->total;
 
@@ -280,12 +283,14 @@
         public function observaciones_recorridos($data){
 
             $nit = $data["nit"];
+            $month = $data["month"];
 
             $result = app('db')->select("   SELECT 
                                                 COUNT(*) AS TOTAL
                                             FROM OBSERVACIONES_5S
                                             WHERE NIT = '$nit'
-                                            AND FUENTE = 'RECORRIDO'");
+                                            AND FUENTE = 'RECORRIDO'
+                                            AND TO_CHAR(FECHA_OBS, 'YYYY-MM') = '$month'");
 
             $calificacion = 100;
 
@@ -320,12 +325,14 @@
         public function observaciones_auditorias($data){
 
             $nit = $data["nit"];
+            $month = $data["month"];
 
             $result = app('db')->select("   SELECT 
                                                 COUNT(*) AS TOTAL
                                             FROM OBSERVACIONES_5S
                                             WHERE NIT = '$nit'
-                                            AND FUENTE = 'AUDITORIA'");
+                                            AND FUENTE = 'AUDITORIA'
+                                            AND TO_CHAR(FECHA_OBS, 'YYYY-MM') = '$month'");
 
             $calificacion = 100;
 
