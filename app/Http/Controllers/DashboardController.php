@@ -119,6 +119,10 @@
 
             $colaborador = $data["colaborador"];
 
+            $result_colaborador = Empleado::where('nit', $colaborador->nit)->first();
+
+            $colaborador->jefe = $result_colaborador->jefe;
+
             // Obtener los porcentaje de evaluación
             $result = app('db')->select("   SELECT *
                                             FROM RH_COLABORADORES_TEMPORADA
@@ -162,12 +166,24 @@
 
             }
 
-            // Colega
-            $evaluacion_colega = app('db')->select("    SELECT *
-                                                        FROM RH_RESULTADOS_TEMPORADA
-                                                        WHERE TEMPORADAID = '$colaborador->temporadaid'
-                                                        AND NIT = '$colaborador->nit'
-                                                        AND TIPOEV = 'colega'");
+            // Colega o Equipo
+            if ($colaborador->jefe) {
+                
+                $evaluacion_colega = app('db')->select("    SELECT *
+                                                            FROM RH_RESULTADOS_TEMPORADA
+                                                            WHERE TEMPORADAID = '$colaborador->temporadaid'
+                                                            AND NIT = '$colaborador->nit'
+                                                            AND TIPOEV = 'subalterno'");
+
+            }else{
+
+                $evaluacion_colega = app('db')->select("    SELECT *
+                                                            FROM RH_RESULTADOS_TEMPORADA
+                                                            WHERE TEMPORADAID = '$colaborador->temporadaid'
+                                                            AND NIT = '$colaborador->nit'
+                                                            AND TIPOEV = 'colega'");
+
+            }
 
             $colaborador->colega = $evaluacion_colega;
 

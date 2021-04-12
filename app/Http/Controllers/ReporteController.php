@@ -96,13 +96,17 @@
                         $item->calificacion = $result["calificacion"];
                         $item->editable = $result["editable"];
                         $item->info_calculo = $result["info_calculo"];
+                        
 
                     }else{
 
                         $item->calificacion = 100;
+                        $item->edit = true;
                         $item->editable = true;
 
                     }
+
+                    $item->comentario = null;
 
                 }
 
@@ -183,24 +187,50 @@
 
                 }else{
 
+                    // Validar si se obtiene la calificación desde otra función
+
                     $item->detalle_evaluacion = DetalleEvaluacion::where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item->id)->first();
 
-                    $valor_item = 0;
-
-                    // Especificar cual será el valor
-                    if ($area->iso == '1') {
+                    if ($item->funcion_calculo) {
                         
-                        // Si es ISO seleccionar el valor dependiendo si es asesor o colaborador
-                        $valor_item = $colaborador->jefe == '1' ? $item->valor : $item->valor_p;
+                        $data = [
+                            "usuario" => $colaborador->usuario,
+                            "nit" => $colaborador->nit,
+                            "month" => $request->month
+                        ];
 
+                        $result = $this->{$item->funcion_calculo}($data);
+
+                        $item->calificacion = $result["calificacion"];
+                        $item->editable = $result["editable"];
+                        $item->info_calculo = $result["info_calculo"];
+                        
                     }else{
 
-                        // Si no es ISO asignar 
-                        $valor_item = $colaborador->jefe == '1' ? $item->valor_no_iso : $item->valor_no_iso_p;
+                        $valor_item = 0;
+
+                        // Especificar cual será el valor
+                        if ($area->iso == '1') {
+                            
+                            // Si es ISO seleccionar el valor dependiendo si es asesor o colaborador
+                            $valor_item = $colaborador->jefe == '1' ? $item->valor : $item->valor_p;
+
+                        }else{
+
+                            // Si no es ISO asignar 
+                            $valor_item = $colaborador->jefe == '1' ? $item->valor_no_iso : $item->valor_no_iso_p;
+
+                        }
+
+                        $item->calificacion = round(($item->detalle_evaluacion->calificacion / $valor_item) * 100, 0);
+
+                        $item->editable = true;
+                        $item->edit = true;
 
                     }
 
-                    $item->calificacion = ($item->detalle_evaluacion->calificacion / $valor_item) * 100;
+                    $item->comentario = $item->detalle_evaluacion->comentario;
+
                 }
 
                 // Especificar cual será el valor
@@ -216,10 +246,8 @@
 
                 }
 
-
                 $item->check = false;
                 $item->show_description = false;
-                $item->editable = false;
 
             }
 

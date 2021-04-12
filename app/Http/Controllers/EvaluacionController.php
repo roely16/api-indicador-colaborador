@@ -30,6 +30,7 @@
                 $detalle_evaluacion = new DetalleEvaluacion();
                 $detalle_evaluacion->id_evaluacion = $evaluacion->id;
                 $detalle_evaluacion->id_item = $criterio["id"];
+                $detalle_evaluacion->comentario = $criterio["comentario"];
 
                 if ($request->criterio["division"] == 'S') {
                     
@@ -221,7 +222,7 @@
 
                 }
 
-                $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion]);
+                $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion, 'comentario' => $item["comentario"]]);
 
 
             }
