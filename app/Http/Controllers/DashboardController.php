@@ -14,7 +14,7 @@
         public function dashboard_area(Request $request){
 
             // Mes actual
-            $month = date('m');
+            $month = $request->month;
 
             $empleados = Empleado::where('codarea', $request->codarea)->where('status', 'A')->get();
 
@@ -37,7 +37,7 @@
                                                             FROM RRHH_IND_EVALUACION
                                                             WHERE ID_CRITERIO = $criterio->id
                                                             AND ID_PERSONA = '$empleado->nit'
-                                                            AND TO_CHAR(CREATED_AT, 'MM') = '$month'");
+                                                            AND MES = '$month'");
 
                         if ($evaluacion) {
                             
@@ -87,7 +87,8 @@
 
                         $data = [
                             "colaborador" => $empleado,
-                            "criterio" => $criterio
+                            "criterio" => $criterio,
+                            "month" => $month
                         ];
 
                         $result = $this->{$criterio->funcion_calculo}($data);
@@ -217,16 +218,18 @@
         public function sso($data){
 
             // Mes actual
-            $month = date('m/Y');
+            $month = $data["month"];
 
             $colaborador = $data["colaborador"];
 
             $result = app('db')->select("   SELECT 
                                                 COUNT(*) AS TOTAL, 
                                                 SUM(CASE WHEN CUMPLIO = 'S' THEN 1 ELSE 0 END) AS CUMPLIO
-                                            FROM RRHH_IND_ACTIVIDAD_RESPONSABLE
-                                            WHERE ID_PERSONA = '$colaborador->nit'
-                                            AND TO_CHAR(CREATED_AT, 'MM/YYYY') = '$month'");
+                                            FROM RRHH_IND_ACTIVIDAD_RESPONSABLE T1
+                                            INNER JOIN RRHH_IND_ACTIVIDAD T2
+                                            ON T1.ID_ACTIVIDAD = T2.ID
+                                            WHERE T1.ID_PERSONA = '$colaborador->nit'
+                                            AND TO_CHAR(T2.FECHA_CUMPLIMIENTO, 'YYYY-MM') = '$month'");
 
             if ($result) {
                 
@@ -272,7 +275,7 @@
         public function convivencia($data){
 
             // Mes actual
-            $month = date('m/Y');
+            $month = $data["month"];
 
             $colaborador = $data["colaborador"];
 
@@ -281,7 +284,7 @@
                                             FROM RC_RECORD
                                             WHERE NIT = '$colaborador->nit'
                                             AND ID_TIPO IN (7,8)
-                                            AND TO_CHAR(FECHA, 'MM/YYYY') = '$month'");
+                                            AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'");
 
             $colaborador->calificacion = 100;
 
@@ -329,7 +332,8 @@
 
             $result = app('db')->select("   SELECT *
                                             FROM RRHH_IND_EVA_COMPETENCIA
-                                            WHERE ID_PERSONA = '$colaborador->nit'");
+                                            WHERE ID_PERSONA = '$colaborador->nit'
+                                            ORDER BY ID DESC");
 
             if ($result) {
                 

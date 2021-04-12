@@ -32,7 +32,7 @@
 
                 foreach ($competencias as &$competencia) {
                     
-                    $competencia->resultado = 1;
+                    $competencia->resultado = null;
 
                 }
 
