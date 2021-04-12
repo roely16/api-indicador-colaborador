@@ -144,3 +144,12 @@ $router->post('/eliminar_evaluacion_competencia', 'CompetenciaController@elimina
 
 // Obtener las evaluaciones
 $router->post('/obtener_evaluaciones_competencia', 'CompetenciaController@obtener_evaluaciones');
+
+// Obtener los perfiles
+$router->post('/obtener_perfiles', 'PerfilController@obtener_perfiles');
+
+// Registrar un perfil
+$router->post('/registrar_perfil', 'PerfilController@registrar');
+
+// Información del colaborador
+$router->post('/info_colaborador', 'PerfilController@info_colaborador');
