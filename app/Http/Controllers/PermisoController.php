@@ -11,7 +11,7 @@
 
         public function obtener_permisos_usuario(Request $request){
 
-            $menu = Menu::all();
+            $menu = Menu::where('ocultar', '=', null)->get();
 
             foreach ($menu as &$item) {
                 
