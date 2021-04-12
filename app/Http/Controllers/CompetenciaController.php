@@ -66,6 +66,7 @@
             $evaluacion->observaciones = $request->observaciones;
             $evaluacion->competencias_tecnicas = $res_competencias[0];
             $evaluacion->competencias_blandas = $res_competencias[1];
+            $evaluacion->periodo = $request->month;
             $evaluacion->calificacion = $request->total;
             
             $evaluacion->save();
@@ -99,13 +100,85 @@
 
         public function detalle_evaluacion(Request $request){
 
-            return response()->json($request);
+            $evaluacion = EvaluacionCompetencia::find($request->id);
+
+            $empleado = Empleado::where('nit', $request->nit_colaborador)->first();
+
+            $perfil = Perfil::find($empleado->id_perfil);
+
+            $tipos_competencias = TipoCompetencia::all();
+
+            foreach ($tipos_competencias as &$tipo) {
+
+                $competencias = Competencia::where('id_tipo', $tipo->id)->where('id_perfil', $empleado->id_perfil)->get();
+
+                foreach ($competencias as &$competencia) {
+                    
+                    // Buscar el resultado obtenido
+                    $detalle = DetalleEvaluacionCompetencia::where('id_evaluacion', $evaluacion->id)->where('id_competencia', $competencia->id)->first();
+
+                    if ($detalle) {
+                        
+                        $competencia->resultado = intval($detalle->resultado);
+
+                    }
+
+                }
+
+                $tipo->competencias = $competencias;
+
+
+            }
+
+            $evaluacion->tipos_competencias = $tipos_competencias;
+            $evaluacion->perfil = $perfil->nombre;
+
+            return response()->json($evaluacion);
 
         }
 
         public function editar_evaluacion(Request $request){
 
-            return response()->json($request);
+            $evaluacion = EvaluacionCompetencia::find($request->id_evaluacion);
+
+            $res_competencias = [];
+
+            foreach ($request->tipos_competencias as $tipo) {
+                
+                $res_competencias [] = $tipo["result"];
+
+            }
+
+            $evaluacion->observaciones = $request->observaciones;
+            $evaluacion->competencias_tecnicas = $res_competencias[0];
+            $evaluacion->competencias_blandas = $res_competencias[1];
+            $evaluacion->periodo = $request->month;
+            $evaluacion->calificacion = $request->total;
+
+            $evaluacion->save();
+
+            foreach ($request->tipos_competencias as $tipo) {
+                
+                foreach ($tipo["competencias"] as $competencia) {
+                    
+                    $detalle_evaluacion = DetalleEvaluacionCompetencia::where('id_evaluacion', $request->id_evaluacion)->where('id_competencia', $competencia["id"])->first();
+
+                    $detalle_evaluacion->resultado = $competencia["resultado"];
+
+                    $detalle_evaluacion->save();
+
+                }
+
+            }
+
+            $data = [
+                "status" => 200,
+                "title" => "Excelente",
+                "message" => "La evaluación a sido actualizada exitosamente",
+                "type" => "success"
+            ];
+
+            return response()->json($data);
 
         }
 
