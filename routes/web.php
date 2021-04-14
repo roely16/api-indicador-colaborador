@@ -153,3 +153,12 @@ $router->post('/registrar_perfil', 'PerfilController@registrar');
 
 // Información del colaborador
 $router->post('/info_colaborador', 'PerfilController@info_colaborador');
+
+// Eliminar perfil
+$router->post('/eliminar_perfil', 'PerfilController@eliminar');
+
+// Detalle del perfil
+$router->post('/detalle_perfil', 'PerfilController@detalle');
+
+// Editar el perfil
+$router->post('/editar_perfil', 'PerfilController@editar');
