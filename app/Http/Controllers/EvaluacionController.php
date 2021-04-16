@@ -30,8 +30,13 @@
                 $detalle_evaluacion = new DetalleEvaluacion();
                 $detalle_evaluacion->id_evaluacion = $evaluacion->id;
                 $detalle_evaluacion->id_item = $criterio["id"];
-                $detalle_evaluacion->comentario = $criterio["comentario"];
 
+                if (array_key_exists('comentario', $criterio)) {
+
+                    $detalle_evaluacion->comentario = $criterio["comentario"];
+
+                }
+                
                 if ($request->criterio["division"] == 'S') {
                     
                     $detalle_evaluacion->calificacion = ($criterio["valor"] * $criterio["calificacion"]) / 100;
@@ -73,12 +78,52 @@
                                                         T1.MES,
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT,
-                                                        T1.VALOR_CRITERIO
+                                                        T1.VALOR_CRITERIO,
+                                                        T3.DESCRIPCION AS AREA
                                                     FROM RRHH_IND_EVALUACION T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
+                                                    INNER JOIN RH_AREAS T3
+                                                    ON T2.CODAREA = T3.CODAREA
                                                     WHERE T1.ID_CRITERIO = $criterio->id
                                                     ORDER BY T1.ID DESC");
+
+                $headers = [
+                    [
+                        "text" => "Colaborador",
+                        "value" => "colaborador",
+                        "width" => "30%"
+                    ],
+                    [
+                        "text" => "Sección",
+                        "value" => "area",
+                        "width" => "20%"
+                    ],
+                    [
+                        "text" => "Fecha de Registro",
+                        "value" => "created_at",
+                        "width" => "20%"
+                    ],
+                    [
+                        "text" => "Mes",
+                        "value" => "mes",
+                        "width" => "10%"
+                    ],
+                    [
+                        "text" => "Calificación",
+                        "value" => "calificacion",
+                        "width" => "10%",
+                        "align" => "center",
+                        "sortable" => false
+                    ],
+                    [
+                        "text" => "Acción",
+                        "value" => "action",
+                        "sortable" => false,
+                        "align" => "right",
+                        "width" => "10%"
+                    ]
+                ];
 
             }else{
 
@@ -96,6 +141,38 @@
                                                     WHERE T1.ID_CRITERIO = $criterio->id
                                                     AND T2.CODAREA = $request->codarea
                                                     ORDER BY T1.ID DESC");
+
+                $headers = [
+                    [
+                        "text" => "Colaborador",
+                        "value" => "colaborador",
+                        "width" => "35%"
+                    ],
+                    [
+                        "text" => "Fecha de Registro",
+                        "value" => "created_at",
+                        "width" => "25%"
+                    ],
+                    [
+                        "text" => "Mes",
+                        "value" => "mes",
+                        "width" => "10%"
+                    ],
+                    [
+                        "text" => "Calificación",
+                        "value" => "calificacion",
+                        "width" => "20%",
+                        "align" => "center",
+                        "sortable" => false
+                    ],
+                    [
+                        "text" => "Acción",
+                        "value" => "action",
+                        "sortable" => false,
+                        "align" => "right",
+                        "width" => "10%"
+                    ]
+                ];
 
             }
 
@@ -135,38 +212,6 @@
                 }
 
             }
-
-            $headers = [
-                [
-                    "text" => "Colaborador",
-                    "value" => "colaborador",
-                    "width" => "35%"
-                ],
-                [
-                    "text" => "Fecha de Registro",
-                    "value" => "created_at",
-                    "width" => "25%"
-                ],
-                [
-                    "text" => "Mes",
-                    "value" => "mes",
-                    "width" => "10%"
-                ],
-                [
-                    "text" => "Calificación",
-                    "value" => "calificacion",
-                    "width" => "20%",
-                    "align" => "center",
-                    "sortable" => false
-                ],
-                [
-                    "text" => "Acción",
-                    "value" => "action",
-                    "sortable" => false,
-                    "align" => "right",
-                    "width" => "10%"
-                ]
-            ];
 
             $data = [
                 "items" => $evaluaciones,

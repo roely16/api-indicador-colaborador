@@ -214,6 +214,59 @@
 
             if ($permiso->secciones == 'S') {
 
+                $evaluaciones = app('db')->select(" SELECT 
+                                                        T1.ID, 
+                                                        T1.ID_PERSONA,
+                                                        T1.PERIODO,
+                                                        T1.COMPETENCIAS_TECNICAS, 
+                                                        T1.COMPETENCIAS_BLANDAS,
+                                                        T1.CALIFICACION,
+                                                        CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
+                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
+                                                        T3.DESCRIPCION AS AREA
+                                                    FROM RRHH_IND_EVA_COMPETENCIA T1
+                                                    INNER JOIN RH_EMPLEADOS T2
+                                                    ON T1.ID_PERSONA = T2.NIT
+                                                    INNER JOIN RH_AREAS T3
+                                                    ON T2.CODAREA = T3.CODAREA
+                                                    ORDER BY T1.ID DESC");
+
+                $headers = [
+                    [
+                        "text" => "Colaborador",
+                        "value" => "colaborador",
+                        "width" => "30%"
+                    ],
+                    [
+                        "text" => "Sección",
+                        "value" => "area",
+                        "width" => "20%"
+                    ],
+                    [
+                        "text" => "Fecha de Registro",
+                        "value" => "created_at",
+                        "width" => "20%"
+                    ],
+                    [
+                        "text" => "Mes",
+                        "value" => "periodo",
+                        "width" => "10%"
+                    ],
+                    [
+                        "text" => "Calificación",
+                        "value" => "calificacion",
+                        "width" => "10%",
+                        "align" => "center",
+                        "sortable" => false
+                    ],
+                    [
+                        "text" => "Acción",
+                        "value" => "action",
+                        "sortable" => false,
+                        "align" => "right",
+                        "width" => "10%"
+                    ]
+                ];
 
 
             }else{
@@ -232,28 +285,6 @@
                                                     ON T1.ID_PERSONA = T2.NIT
                                                     WHERE T2.CODAREA = $request->codarea
                                                     ORDER BY T1.ID DESC");
-
-            }
-
-            foreach ($evaluaciones as $evaluacion) {
-                
-                $evaluacion->calificacion = round($evaluacion->calificacion, 2);
-
-                if ($evaluacion->calificacion >= 0 && $evaluacion->calificacion < 60) {
-                   
-                    $evaluacion->color = 'red';
-
-                }elseif( $evaluacion->calificacion >= 60 && $evaluacion->calificacion < 80){
-
-                    $evaluacion->color = 'orange';
-
-                }else{
-
-                    $evaluacion->color = 'green';
-
-                }
-
-            }
 
             $headers = [
                 [
@@ -286,6 +317,29 @@
                     "width" => "10%"
                 ]
             ];
+
+
+            }
+
+            foreach ($evaluaciones as $evaluacion) {
+                
+                $evaluacion->calificacion = round($evaluacion->calificacion, 2);
+
+                if ($evaluacion->calificacion >= 0 && $evaluacion->calificacion < 60) {
+                   
+                    $evaluacion->color = 'red';
+
+                }elseif( $evaluacion->calificacion >= 60 && $evaluacion->calificacion < 80){
+
+                    $evaluacion->color = 'orange';
+
+                }else{
+
+                    $evaluacion->color = 'green';
+
+                }
+
+            }
 
             $data = [
                 "items" => $evaluaciones,
