@@ -26,20 +26,24 @@
 
             $tipos_competencias = TipoCompetencia::all();
 
-            foreach ($tipos_competencias as &$tipo) {
+            if ($perfil) {
                 
-                $competencias = Competencia::where('id_tipo', $tipo->id)->where('id_perfil', $empleado->id_perfil)->get();
-
-                foreach ($competencias as &$competencia) {
-                    
-                    $competencia->resultado = null;
-
+                foreach ($tipos_competencias as &$tipo) {
+                
+                    $competencias = Competencia::where('id_tipo', $tipo->id)->where('id_perfil', $perfil->id)->where('deleted_at', null)->get();
+    
+                    foreach ($competencias as &$competencia) {
+                        
+                        $competencia->resultado = null;
+    
+                    }
+    
+                    $tipo->competencias = $competencias;
+    
                 }
-
-                $tipo->competencias = $competencias;
-
+    
             }
-
+            
             $data = [
                 "empleado" => $empleado,
                 "tipos_competencias" => $tipos_competencias,
