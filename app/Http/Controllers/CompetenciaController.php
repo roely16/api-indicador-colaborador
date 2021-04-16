@@ -223,7 +223,8 @@
                                                         T1.CALIFICACION,
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
-                                                        T3.DESCRIPCION AS AREA
+                                                        T3.DESCRIPCION AS AREA,
+                                                        T2.CODAREA
                                                     FROM RRHH_IND_EVA_COMPETENCIA T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
@@ -279,7 +280,8 @@
                                                         T1.COMPETENCIAS_BLANDAS,
                                                         T1.CALIFICACION,
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
-                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT
+                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
+                                                        T2.CODAREA
                                                     FROM RRHH_IND_EVA_COMPETENCIA T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
