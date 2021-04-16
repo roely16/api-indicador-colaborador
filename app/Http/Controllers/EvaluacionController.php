@@ -79,7 +79,8 @@
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT,
                                                         T1.VALOR_CRITERIO,
-                                                        T3.DESCRIPCION AS AREA
+                                                        T3.DESCRIPCION AS AREA,
+                                                        T3.CODAREA
                                                     FROM RRHH_IND_EVALUACION T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
@@ -134,7 +135,8 @@
                                                         T1.MES,
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
-                                                        T1.VALOR_CRITERIO
+                                                        T1.VALOR_CRITERIO,
+                                                        T2.CODAREA
                                                     FROM RRHH_IND_EVALUACION T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
@@ -267,7 +269,17 @@
 
                 }
 
-                $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion, 'comentario' => $item["comentario"]]);
+                if (array_key_exists('comentario', $item)) {
+
+                    $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion, 'comentario' => $item["comentario"]]);
+
+                }else{
+
+                    $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion]);
+
+                }
+
+                
 
 
             }
