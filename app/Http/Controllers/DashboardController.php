@@ -421,12 +421,21 @@
                         $detalle = DetalleEvaluacion::where('id_evaluacion', $evaluacion->id)->get();
 
                         $total = 0;
+                        $str_motivo = null;
 
                         foreach ($detalle as $item) {
                             
                             $total += $item->calificacion;
 
+                            if ($item->motivo) {
+                                    
+                                $str_motivo = $str_motivo . $item->motivo;
+
+                            }
+
                         }
+
+                        $criterio->motivo = $str_motivo;
 
                         $criterio->calificacion = round(($total / $evaluacion->valor_criterio) * 100, 2);
 
