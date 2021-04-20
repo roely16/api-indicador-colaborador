@@ -162,3 +162,6 @@ $router->post('/detalle_perfil', 'PerfilController@detalle');
 
 // Editar el perfil
 $router->post('/editar_perfil', 'PerfilController@editar');
+
+// Indicador individual
+$router->post('/indicador_individual', 'DashboardController@indicador_individual');

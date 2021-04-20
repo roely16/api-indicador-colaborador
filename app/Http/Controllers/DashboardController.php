@@ -380,6 +380,103 @@
 
         }
 
+        public function indicador_individual(Request $request){
+
+            $month = $request->month;
+
+            $empleado = Empleado::where('nit', $request->nit)->where('status', 'A')->first();
+
+            $criterios = Criterio::all();
+
+            $empleado->nombre_completo = $empleado->nombre . ' ' . $empleado->apellido;
+            $empleado->criterios = $criterios;
+
+            // Por cada uno de los criterios 
+            foreach ($empleado->criterios as &$criterio) {
+                
+                if (!$criterio->funcion_calculo) {
+                    
+                    // Buscar la última evaluación según el criterio
+                    $evaluacion = app('db')->select("   SELECT *
+                                                        FROM RRHH_IND_EVALUACION
+                                                        WHERE ID_CRITERIO = $criterio->id
+                                                        AND ID_PERSONA = '$empleado->nit'
+                                                        AND MES = '$month'");
+
+                    if ($evaluacion) {
+                        
+                        // Calcular la calificación
+
+                        $evaluacion = $evaluacion[0];
+
+                        $detalle = DetalleEvaluacion::where('id_evaluacion', $evaluacion->id)->get();
+
+                        $total = 0;
+
+                        foreach ($detalle as $item) {
+                            
+                            $total += $item->calificacion;
+
+                        }
+
+                        $criterio->calificacion = round(($total / $evaluacion->valor_criterio) * 100, 2);
+
+                        $criterio->calificacion = $criterio->calificacion > 100 ? 100 : $criterio->calificacion;
+
+                        if ($criterio->calificacion >= 0 && $criterio->calificacion < 60) {
+                        
+                            $criterio->color = 'red';
+
+                        }elseif( $criterio->calificacion >= 60 && $criterio->calificacion < 80){
+
+                            $criterio->color = 'orange';
+
+                        }else{
+
+                            $criterio->color = 'green';
+
+                        }
+
+                        $empleado->total_mensual += round(($evaluacion->valor_criterio * $criterio->calificacion) / 100, 2);
+
+                    }else{
+
+                        $criterio->pendiente = true;
+
+                    }
+
+                    $empleado->total_anual = 50;
+
+                }else{
+
+                    $data = [
+                        "colaborador" => $empleado,
+                        "criterio" => $criterio,
+                        "month" => $month
+                    ];
+
+                    $result = $this->{$criterio->funcion_calculo}($data);
+
+                    $criterio->color = $result["color"];
+                    $criterio->calificacion = $result["calificacion"];
+
+                    /*
+                        TODO
+                        - Tomar el valor del criterio si es ISO o no
+                    */
+
+                    $empleado->total_mensual += round(($criterio->valor * $criterio->calificacion) / 100, 2);
+
+                }
+
+            }
+
+            $empleado->stars = ($empleado->total_mensual * 5) / 100;
+
+            return response()->json($empleado);
+
+        }
+
     }
 
 ?>
