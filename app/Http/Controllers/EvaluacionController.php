@@ -36,6 +36,25 @@
                     $detalle_evaluacion->comentario = $criterio["comentario"];
 
                 }
+
+                if (array_key_exists('motivos', $criterio)) {
+
+                    // Validar que existan motivos
+                    if (count($criterio["motivos"]) > 0) {
+                        
+                        $str_motivos = null;
+
+                        foreach ($criterio["motivos"] as $motivo) {
+                            
+                            $str_motivos = $str_motivos . $motivo["descripcion"] . " \r\n";
+
+                        }
+
+                        $detalle_evaluacion->motivo = $str_motivos;
+
+                    }
+
+                }
                 
                 if ($request->criterio["division"] == 'S') {
                     

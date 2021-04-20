@@ -96,7 +96,7 @@
                         $item->calificacion = $result["calificacion"];
                         $item->editable = $result["editable"];
                         $item->info_calculo = $result["info_calculo"];
-                        
+                        $item->motivos = $result["motivos"];                        
 
                     }else{
 
@@ -196,7 +196,7 @@
                         $data = [
                             "usuario" => $colaborador->usuario,
                             "nit" => $colaborador->nit,
-                            "month" => $request->month
+                            "month" => $evaluacion->mes
                         ];
 
                         $result = $this->{$item->funcion_calculo}($data);
@@ -204,6 +204,7 @@
                         $item->calificacion = $result["calificacion"];
                         $item->editable = $result["editable"];
                         $item->info_calculo = $result["info_calculo"];
+                        $item->motivos = $result["motivos"];  
                         
                     }else{
 
@@ -298,10 +299,31 @@
 
             }
 
+            $motivos = [];
+
+            // Obtener información de la queja 
+            if($total > 0){
+
+                $motivos = app('db')->select("  SELECT 
+                                                    CORREL_QUEJA AS DESCRIPCION
+                                                FROM SQ_QUEJA
+                                                WHERE DIRIGIDO_A = '$usuario'
+                                                AND CLASIFICACION = 'QUEJA'
+                                                AND TO_CHAR(FECHA_QUEJA, 'YYYY-MM') = '$month'");
+
+                foreach ($motivos as &$motivo) {
+                    
+                    $motivo->descripcion = "Queja No. " . $motivo->descripcion;
+
+                }
+
+            }
+
             $data = [
                 "calificacion" => $calificacion,
                 "editable" => false,
-                "info_calculo" => "Cálculo realizado en base a la información obtenida del módulo de quejas."
+                "info_calculo" => "Cálculo realizado en base a la información obtenida del módulo de quejas.",
+                "motivos" => $motivos,
             ];
 
             return $data;
@@ -338,12 +360,28 @@
 
                 }
 
+                // Obtener los correlativos de las observaciones
+
+                $observaciones = app('db')->select("SELECT 
+                                                        CORRELATIVO AS DESCRIPCION
+                                                    FROM OBSERVACIONES_5S
+                                                    WHERE NIT = '$nit'
+                                                    AND FUENTE = 'RECORRIDO'
+                                                    AND TO_CHAR(FECHA_OBS, 'YYYY-MM') = '$month'");
+
+                foreach ($observaciones as &$observacion) {
+                                    
+                    $observacion->descripcion = "Observación No. " . $observacion->descripcion;
+
+                }
+
             }
 
             $data = [
                 "calificacion" => $calificacion,
                 "editable" => false,
-                "info_calculo" => "Cálculo realizado en base a la información obtenida del módulo de 5S's."
+                "info_calculo" => "Cálculo realizado en base a la información obtenida del módulo de 5S's.",
+                "motivos" => $observaciones
             ];
 
             return $data;
@@ -380,12 +418,27 @@
 
                 }
 
+                // Obtener las observaciones
+
+                $observaciones = app('db')->select("SELECT 
+                                                        CORRELATIVO AS DESCRIPCION
+                                                    FROM OBSERVACIONES_5S
+                                                    WHERE NIT = '$nit'
+                                                    AND FUENTE = 'AUDITORIA'
+                                                    AND TO_CHAR(FECHA_OBS, 'YYYY-MM') = '$month'");
+
+                foreach ($observaciones as &$observacion) {
+                    
+                    $observacion->descripcion = "Observación No. " . $observacion->descripcion;
+
+                }
             }
 
             $data = [
                 "calificacion" => $calificacion,
                 "editable" => false,
-                "info_calculo" => "Cálculo realizado en base a la información obtenida del módulo de 5S's."
+                "info_calculo" => "Cálculo realizado en base a la información obtenida del módulo de 5S's.",
+                "motivos" => $observaciones
             ];
 
             return $data;
