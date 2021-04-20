@@ -165,3 +165,12 @@ $router->post('/editar_perfil', 'PerfilController@editar');
 
 // Indicador individual
 $router->post('/indicador_individual', 'DashboardController@indicador_individual');
+
+// Registrar item de criterio
+$router->post('/registrar_item_criterio', 'CriterioController@registrar_item_criterio');
+
+// Eliminar item de criterio
+$router->post('/eliminar_item_criterio', 'CriterioController@eliminar_item_criterio');
+
+// Detalle item de criterio
+$router->post('/detalle_item_criterio', 'CriterioController@detalle_item_criterio');
