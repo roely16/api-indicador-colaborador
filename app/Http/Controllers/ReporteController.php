@@ -62,11 +62,29 @@
 
             if ($colaborador->jefe == '1') {
                 
-                $items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_asesor', 'S')->get();
+                //$items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_asesor', 'S')->get();
+
+                $items = app('db')->select("    SELECT *
+                                                FROM RRHH_IND_CRITERIO_ITEM T1
+                                                INNER JOIN RRHH_IND_CRITERIO_ITEM_AREA T2
+                                                ON T1.ID = T2.ID_ITEM
+                                                WHERE T2.CODAREA = $colaborador->codarea
+                                                AND T1.ID_CRITERIO = $criterio->id
+                                                AND T1.APLICA_ASESOR = 'S'
+                                                ORDER BY T1.ID ASC");
 
             }else{
 
-                $items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_prestador', 'S')->get();
+                //$items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_prestador', 'S')->get();
+
+                $items = app('db')->select("    SELECT *
+                                                FROM RRHH_IND_CRITERIO_ITEM T1
+                                                INNER JOIN RRHH_IND_CRITERIO_ITEM_AREA T2
+                                                ON T1.ID = T2.ID_ITEM
+                                                WHERE T2.CODAREA = $colaborador->codarea
+                                                AND T1.ID_CRITERIO = $criterio->id
+                                                AND T1.APLICA_PRESTADOR = 'S'
+                                                ORDER BY T1.ID ASC");
 
             }
 

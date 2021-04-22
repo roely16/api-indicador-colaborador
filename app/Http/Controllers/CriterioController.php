@@ -130,6 +130,16 @@
 
             }
 
+            // Registrar en las áreas que corresponda
+            foreach ($request->areas as $area) {
+                
+                $result = app('db')->table('RRHH_IND_CRITERIO_ITEM_AREA')->insert([
+                    "id_item" => $item_criterio->id,
+                    "codarea" => $area
+                ]);
+
+            }
+
             // Actualizar los valores
 
             if ($request->aplica_asesor) {
@@ -223,7 +233,23 @@
 
         public function detalle_item_criterio(Request $request){
 
-            return response()->json($request);
+            $item = CriterioItem::find($request->id);
+
+            $id_areas = app('db')->select(" SELECT CODAREA
+                                            FROM RRHH_IND_CRITERIO_ITEM_AREA
+                                            WHERE ID_ITEM = $request->id");
+
+            $areas = [];
+
+            foreach ($id_areas as $id) {
+                
+                $areas [] = $id;
+
+            }
+
+            $item->areas = $areas;
+
+            return response()->json($item);
 
         }
 
@@ -315,6 +341,35 @@
             ];
 
             return response()->json($data);
+
+        }
+
+        public function asignar_areas(){
+
+            $areas = app('db')->select("    SELECT *
+                                            FROM RH_AREAS
+                                            WHERE ESTATUS = 'A'");
+
+            $items = app('db')->select("    SELECT *
+                                            FROM RRHH_IND_CRITERIO_ITEM
+                                            WHERE DELETED_AT IS NULL
+                                            ORDER BY ID ASC");
+
+            // Registrar para todos los items el área
+            foreach ($items as $item) {
+                
+                foreach ($areas as $area) {
+                    
+                    $result = app('db')->table('RRHH_IND_CRITERIO_ITEM_AREA')->insert([
+                        "id_item" => $item->id,
+                        "codarea" => $area->codarea
+                    ]);
+
+                }
+
+            }
+
+            return response()->json($items);
 
         }
 
