@@ -264,78 +264,69 @@
 
             }
 
-            // Actualizar los valores
-            if ($request->aplica_asesor) {
-                
-                // Si el item aplica para el asesor
-
-                if ($criterio->valor) {
+             // Si el item aplica para el asesor
+            if ($criterio->valor) {
                     
-                    // Si el criterio tiene valor ISO
-                    $items = CriterioItem::where('id_criterio', $criterio->id)
-                                ->where('aplica_asesor', 'S')
-                                ->get();
+                // Si el criterio tiene valor ISO
+                $items = CriterioItem::where('id_criterio', $criterio->id)
+                            ->where('aplica_asesor', 'S')
+                            ->get();
 
-                    $value = round($criterio->valor / count($items), 2);
+                $value = round($criterio->valor / count($items), 2);
 
-                    $result = CriterioItem::where('id_criterio', $criterio->id)
-                                ->where('aplica_asesor', 'S')
-                                ->update(['valor' => $value]);
-
-                }
-
-                if ($criterio->valor_no_iso) {
-                    
-                    // Si el criterio tiene valor NO ISO
-                    $items = CriterioItem::where('id_criterio', $criterio->id)
-                                ->where('aplica_asesor', 'S')
-                                ->get();
-
-                    $value = round($criterio->valor_no_iso / count($items), 2);
-
-                    $result = CriterioItem::where('id_criterio', $criterio->id)
-                                ->where('aplica_asesor', 'S')
-                                ->update(['valor_no_iso' => $value]);
-
-                }
+                $result = CriterioItem::where('id_criterio', $criterio->id)
+                            ->where('aplica_asesor', 'S')
+                            ->update(['valor' => $value]);
 
             }
 
-            if ($request->aplica_prestador) {
+            if ($criterio->valor_no_iso) {
                 
-                // Si el item aplica para el colaborador
+                // Si el criterio tiene valor NO ISO
+                $items = CriterioItem::where('id_criterio', $criterio->id)
+                            ->where('aplica_asesor', 'S')
+                            ->get();
 
-                if ($criterio->valor) {
-                    
-                    // Si el criterio tiene valor ISO
-                    $items = CriterioItem::where('id_criterio', $criterio->id)
-                                ->where('aplica_prestador', 'S')
-                                ->get();
+                $value = round($criterio->valor_no_iso / count($items), 2);
 
-                    $value = round($criterio->valor / count($items), 2);
-
-                    $result = CriterioItem::where('id_criterio', $criterio->id)
-                                ->where('aplica_prestador', 'S')
-                                ->update(['valor_p' => $value]);
-
-                }
-
-                if ($criterio->valor_no_iso) {
-                    
-                    // Si el criterio tiene valor NO ISO
-                    $items = CriterioItem::where('id_criterio', $criterio->id)
-                                ->where('aplica_prestador', 'S')
-                                ->get();
-
-                    $value = round($criterio->valor_no_iso / count($items), 2);
-
-                    $result = CriterioItem::where('id_criterio', $criterio->id)
-                                ->where('aplica_prestador', 'S')
-                                ->update(['valor_no_iso_p' => $value]);
-
-                }
+                $result = CriterioItem::where('id_criterio', $criterio->id)
+                            ->where('aplica_asesor', 'S')
+                            ->update(['valor_no_iso' => $value]);
 
             }
+
+            // Si el item aplica para el colaborador
+
+            if ($criterio->valor) {
+                    
+                // Si el criterio tiene valor ISO
+                $items = CriterioItem::where('id_criterio', $criterio->id)
+                            ->where('aplica_prestador', 'S')
+                            ->get();
+
+                $value = round($criterio->valor / count($items), 2);
+
+                $result = CriterioItem::where('id_criterio', $criterio->id)
+                            ->where('aplica_prestador', 'S')
+                            ->update(['valor_p' => $value]);
+
+            }
+
+            if ($criterio->valor_no_iso) {
+                
+                // Si el criterio tiene valor NO ISO
+                $items = CriterioItem::where('id_criterio', $criterio->id)
+                            ->where('aplica_prestador', 'S')
+                            ->get();
+
+                $value = round($criterio->valor_no_iso / count($items), 2);
+
+                $result = CriterioItem::where('id_criterio', $criterio->id)
+                            ->where('aplica_prestador', 'S')
+                            ->update(['valor_no_iso_p' => $value]);
+
+            }
+
 
             $data = [
                 "status" => 200,
