@@ -265,6 +265,7 @@
             }
 
              // Si el item aplica para el asesor
+
             if ($criterio->valor) {
                     
                 // Si el criterio tiene valor ISO

@@ -71,6 +71,7 @@
                                                 WHERE T2.CODAREA = $colaborador->codarea
                                                 AND T1.ID_CRITERIO = $criterio->id
                                                 AND T1.APLICA_ASESOR = 'S'
+                                                AND T1.DELETED_AT IS NULL
                                                 ORDER BY T1.ID ASC");
 
             }else{
@@ -84,6 +85,7 @@
                                                 WHERE T2.CODAREA = $colaborador->codarea
                                                 AND T1.ID_CRITERIO = $criterio->id
                                                 AND T1.APLICA_PRESTADOR = 'S'
+                                                AND T1.DELETED_AT IS NULL
                                                 ORDER BY T1.ID ASC");
 
             }
@@ -197,6 +199,7 @@
                                                 WHERE T2.CODAREA = $colaborador->codarea
                                                 AND T1.ID_CRITERIO = $criterio->id
                                                 AND T1.APLICA_ASESOR = 'S'
+                                                AND T1.DELETED_AT IS NULL
                                                 ORDER BY T1.ID ASC");
 
             }else{
@@ -210,6 +213,7 @@
                                                 WHERE T2.CODAREA = $colaborador->codarea
                                                 AND T1.ID_CRITERIO = $criterio->id
                                                 AND T1.APLICA_PRESTADOR = 'S'
+                                                AND T1.DELETED_AT IS NULL
                                                 ORDER BY T1.ID ASC");
 
             }
@@ -273,14 +277,32 @@
 
                         }
 
-                        $item->calificacion = round(($item->detalle_evaluacion->calificacion / $valor_item) * 100, 0);
+                        if ($item->detalle_evaluacion) {
+                            
+                            $item->calificacion = round(($item->detalle_evaluacion->calificacion / $valor_item) * 100, 0);
+
+                        }else{
+
+                            $item->calificacion = 100;
+
+                        }
+                        
 
                         $item->editable = true;
                         $item->edit = true;
 
                     }
 
-                    $item->comentario = $item->detalle_evaluacion->comentario;
+                    if ($item->detalle_evaluacion) {
+
+                        $item->comentario = $item->detalle_evaluacion->comentario;
+
+                    }else{
+
+                        $item->comentario = null;
+
+                    }
+                    
 
                 }
 

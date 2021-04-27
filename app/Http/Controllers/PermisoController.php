@@ -193,7 +193,16 @@
 
             $data_ = [];
 
-            $result = $this->{$menu->fun_verificacion}($data_);
+            if ($menu->fun_verificacion) {
+                
+                $result = $this->{$menu->fun_verificacion}($data_);
+
+            }else{
+
+                $result = true;
+
+            }
+            
 
             $data = [
                 "escritura" => $permiso->escritura == 'S' ? true : false,
