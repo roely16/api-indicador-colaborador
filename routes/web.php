@@ -180,3 +180,15 @@ $router->post('/asignar_areas', 'CriterioController@asignar_areas');
 
 // Editar item de criterio
 $router->post('/editar_item_criterio', 'CriterioController@editar_item_criterio');
+
+// Obtener periodos para evaluación de competencias
+$router->post('/obtener_periodos', 'CompetenciaController@obtener_periodos');
+
+// Registrar un nuevo periodo de evaluación de competencias
+$router->post('/registrar_periodo', 'CompetenciaController@registrar_periodo');
+
+// Eliminar un periodo 
+$router->post('/eliminar_periodo', 'CompetenciaController@eliminar_periodo');
+
+// Editar un periodo
+$router->post('/editar_periodo', 'CompetenciaController@editar_periodo');

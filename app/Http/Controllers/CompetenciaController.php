@@ -16,6 +16,8 @@
     use App\Menu;
     use App\Permiso;
 
+    use App\PeriodoEvaCompetencia;
+
     class CompetenciaController extends Controller{
 
         public function obtener_perfil(Request $request){
@@ -351,6 +353,134 @@
                 "items" => $evaluaciones,
                 "headers" => $headers,
             ];
+
+            return response()->json($data);
+
+        }
+
+        public function obtener_periodos(Request $request){
+
+            //$periodos = PeriodoEvaCompetencia::all();
+
+            $periodos = app('db')->select(" SELECT
+                                                ID,
+                                                TO_CHAR(FECHA_INICIO, 'DD/MM/YYYY') AS FECHA_INICIO,
+                                                TO_CHAR(FECHA_FIN, 'DD/MM/YYYY') AS FECHA_FIN,
+                                                TO_CHAR(FECHA_INICIO, 'YYYY-MM-DD') AS FECHA_INICIO_FORMAT,
+                                                TO_CHAR(FECHA_FIN, 'YYYY-MM-DD') AS FECHA_FIN_FORMAT,
+                                                OBSERVACION
+                                            FROM RRHH_IND_EVA_COMP_PERIODO
+                                            WHERE DELETED_AT IS NULL
+                                            ORDER BY ID DESC");
+
+            $i = 1;
+
+            foreach ($periodos as &$periodo) {
+            
+                $periodo->index = $i;
+                
+                $i++;
+
+            }
+
+            $headers = [
+                [
+                    "text" => "Observación",
+                    "value" => "observacion",
+                    "width" => "45%"
+                ],
+                [
+                    "text" => "Inicio",
+                    "value" => "fecha_inicio",
+                    "width" => "20%"
+                ],
+                [
+                    "text" => "Fin",
+                    "value" => "fecha_fin",
+                    "width" => "20%"
+                ],
+                [
+                    "text" => "Acción",
+                    "value" => "action",
+                    "sortable" => false,
+                    "align" => "right",
+                    "width" => "15%"
+                ]
+            ];
+
+
+            $data = [
+                "items" => $periodos,
+                "headers" => $headers
+            ];
+
+            return response()->json($data);
+
+        }
+
+        public function registrar_periodo(Request $request){
+
+            $periodo = new PeriodoEvaCompetencia();
+
+            $periodo->observacion = $request->observacion;
+            $periodo->fecha_inicio = $request->fecha_inicio;
+            $periodo->fecha_fin = $request->fecha_fin;
+            $result = $periodo->save();
+
+            if ($result) {
+
+                $data = [
+                    "status" => 200,
+                    "title" => "Excelente",
+                    "message" => "El periodo a sido registrado exitosamente",
+                    "type" => "success"
+                ];
+
+            }
+
+            return response()->json($data);
+
+        }
+
+        public function eliminar_periodo(Request $request){
+
+            $periodo = PeriodoEvaCompetencia::find($request->id);
+            $result = $periodo->delete();
+
+            if ($result) {
+                
+                $data = [
+                    "status" => 200,
+                    "title" => "Excelente",
+                    "message" => "El periodo a sido eliminado exitosamente",
+                    "type" => "success"
+                ];
+
+            }
+
+            return response()->json($data);
+
+        }
+
+        public function editar_periodo(Request $request){
+
+            $periodo = PeriodoEvaCompetencia::find($request->id);
+
+            $periodo->observacion = $request->observacion;
+            $periodo->fecha_inicio = $request->fecha_inicio;
+            $periodo->fecha_fin = $request->fecha_fin;
+            $result = $periodo->save();
+
+            if ($result) {
+                
+                $data = [
+                    "status" => 200,
+                    "title" => "Excelente",
+                    "message" => "El periodo a sido actualizado exitosamente",
+                    "type" => "success"
+                ];
+
+            }
 
             return response()->json($data);
 
