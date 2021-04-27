@@ -227,7 +227,124 @@
 
         public function editar_item_criterio(Request $request){
 
-            return response()->json($request);
+            $criterio = Criterio::find($request->id_criterio);
+
+            $item_criterio = CriterioItem::find($request->id);
+
+            $item_criterio->descripcion = $request->descripcion;
+            $item_criterio->aplica_asesor = $request->aplica_asesor ? 'S' : null;
+            $item_criterio->aplica_prestador = $request->aplica_prestador ? 'S' : null;
+
+            if (!$request->aplica_asesor) {
+                
+                $item_criterio->valor = null;
+                $item_criterio->valor_no_iso = null;
+
+            }
+
+            if (!$request->aplica_prestador) {
+                
+                $item_criterio->valor_p = null;
+                $item_criterio->valor_no_iso_p = null;
+
+            }
+
+            $item_criterio->save();
+
+            // Eliminar los áreas para realizar la actualización
+            $result = app('db')->table('RRHH_IND_CRITERIO_ITEM_AREA')->where('id_item', $item_criterio->id)->delete();
+
+            // Registrar de nuevo las áreas
+            foreach ($request->areas as $area) {
+                
+                $result = app('db')->table('RRHH_IND_CRITERIO_ITEM_AREA')->insert([
+                    "id_item" => $item_criterio->id,
+                    "codarea" => $area
+                ]);
+
+            }
+
+            // Actualizar los valores
+            if ($request->aplica_asesor) {
+                
+                // Si el item aplica para el asesor
+
+                if ($criterio->valor) {
+                    
+                    // Si el criterio tiene valor ISO
+                    $items = CriterioItem::where('id_criterio', $criterio->id)
+                                ->where('aplica_asesor', 'S')
+                                ->get();
+
+                    $value = round($criterio->valor / count($items), 2);
+
+                    $result = CriterioItem::where('id_criterio', $criterio->id)
+                                ->where('aplica_asesor', 'S')
+                                ->update(['valor' => $value]);
+
+                }
+
+                if ($criterio->valor_no_iso) {
+                    
+                    // Si el criterio tiene valor NO ISO
+                    $items = CriterioItem::where('id_criterio', $criterio->id)
+                                ->where('aplica_asesor', 'S')
+                                ->get();
+
+                    $value = round($criterio->valor_no_iso / count($items), 2);
+
+                    $result = CriterioItem::where('id_criterio', $criterio->id)
+                                ->where('aplica_asesor', 'S')
+                                ->update(['valor_no_iso' => $value]);
+
+                }
+
+            }
+
+            if ($request->aplica_prestador) {
+                
+                // Si el item aplica para el colaborador
+
+                if ($criterio->valor) {
+                    
+                    // Si el criterio tiene valor ISO
+                    $items = CriterioItem::where('id_criterio', $criterio->id)
+                                ->where('aplica_prestador', 'S')
+                                ->get();
+
+                    $value = round($criterio->valor / count($items), 2);
+
+                    $result = CriterioItem::where('id_criterio', $criterio->id)
+                                ->where('aplica_prestador', 'S')
+                                ->update(['valor_p' => $value]);
+
+                }
+
+                if ($criterio->valor_no_iso) {
+                    
+                    // Si el criterio tiene valor NO ISO
+                    $items = CriterioItem::where('id_criterio', $criterio->id)
+                                ->where('aplica_prestador', 'S')
+                                ->get();
+
+                    $value = round($criterio->valor_no_iso / count($items), 2);
+
+                    $result = CriterioItem::where('id_criterio', $criterio->id)
+                                ->where('aplica_prestador', 'S')
+                                ->update(['valor_no_iso_p' => $value]);
+
+                }
+
+            }
+
+            $data = [
+                "status" => 200,
+                "title" => "Excelente",
+                "message" => "El item a sido actualizado exitosamente",
+                "type" => "success"
+            ];
+
+            return response()->json($data);
 
         }
 
@@ -243,7 +360,7 @@
 
             foreach ($id_areas as $id) {
                 
-                $areas [] = $id;
+                $areas [] = $id->codarea;
 
             }
 

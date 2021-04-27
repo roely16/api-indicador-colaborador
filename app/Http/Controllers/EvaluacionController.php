@@ -19,6 +19,7 @@
             $evaluacion->id_persona = $request->id_persona;
             $evaluacion->valor_criterio = $request->criterio["valor"];
             $evaluacion->mes = $request->month;
+            $evaluacion->calificacion = $request->calificacion;
             $evaluacion->save();
 
             //$criterio = Criterio::where('modulo', $request->url)->first();
@@ -30,6 +31,7 @@
                 $detalle_evaluacion = new DetalleEvaluacion();
                 $detalle_evaluacion->id_evaluacion = $evaluacion->id;
                 $detalle_evaluacion->id_item = $criterio["id"];
+                $detalle_evaluacion->valor = $criterio["valor"];
 
                 if (array_key_exists('comentario', $criterio)) {
 
@@ -99,7 +101,8 @@
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_aT,
                                                         T1.VALOR_CRITERIO,
                                                         T3.DESCRIPCION AS AREA,
-                                                        T3.CODAREA
+                                                        T3.CODAREA, 
+                                                        T1.CALIFICACION
                                                     FROM RRHH_IND_EVALUACION T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
@@ -155,7 +158,8 @@
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
                                                         T1.VALOR_CRITERIO,
-                                                        T2.CODAREA
+                                                        T2.CODAREA,
+                                                        T1.CALIFICACION
                                                     FROM RRHH_IND_EVALUACION T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
@@ -214,7 +218,7 @@
 
                 }
 
-                $evaluacion->calificacion = round(($total / $evaluacion->valor_criterio) * 100, 2);
+                //$evaluacion->calificacion = round(($total / $evaluacion->valor_criterio) * 100, 2);
 
                 $evaluacion->calificacion = $evaluacion->calificacion > 100 ? 100 : $evaluacion->calificacion;
 
@@ -268,6 +272,7 @@
 
             $evaluacion = Evaluacion::find($request->id_evaluacion);
             $evaluacion->mes = $request->month;
+            $evaluacion->calificacion = $request->calificacion;
             $evaluacion->save();
 
 
@@ -290,11 +295,11 @@
 
                 if (array_key_exists('comentario', $item)) {
 
-                    $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion, 'comentario' => $item["comentario"]]);
+                    $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion, 'comentario' => $item["comentario"], 'valor' => $item["valor"]]);
 
                 }else{
 
-                    $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion]);
+                    $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion, 'valor' => $item["valor"]]);
 
                 }
 

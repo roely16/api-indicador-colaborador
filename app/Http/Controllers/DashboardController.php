@@ -64,7 +64,7 @@
 
                             $criterio->motivo = $str_motivo;
 
-                            $criterio->calificacion = round(($total / $evaluacion->valor_criterio) * 100, 2);
+                            $criterio->calificacion = $evaluacion->calificacion;
 
                             $criterio->calificacion = $criterio->calificacion > 100 ? 100 : $criterio->calificacion;
 

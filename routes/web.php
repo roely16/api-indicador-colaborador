@@ -177,3 +177,6 @@ $router->post('/detalle_item_criterio', 'CriterioController@detalle_item_criteri
 
 // Asignar áreas
 $router->post('/asignar_areas', 'CriterioController@asignar_areas');
+
+// Editar item de criterio
+$router->post('/editar_item_criterio', 'CriterioController@editar_item_criterio');

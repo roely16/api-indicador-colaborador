@@ -128,16 +128,26 @@
 
                 }
 
+                /* 
+                    Para obtener el valor de cada ítem dividir el
+                    número de ítems entre el valor del criterio 
+                    dependiendo si es ISO o NO ISO
+                */
+
                 // Especificar cual será el valor
                 if ($area->iso == '1') {
                     
                     // Si es ISO seleccionar el valor dependiendo si es asesor o colaborador
-                    $item->valor = $colaborador->jefe == '1' ? $item->valor : $item->valor_p;
+                    //$item->valor = $colaborador->jefe == '1' ? $item->valor : $item->valor_p;
+
+                    $item->valor = round($criterio->valor / count($items), 2);
 
                 }else{
 
                     // Si no es ISO asignar 
-                    $item->valor = $colaborador->jefe == '1' ? $item->valor_no_iso : $item->valor_no_iso_p;
+                    //$item->valor = $colaborador->jefe == '1' ? $item->valor_no_iso : $item->valor_no_iso_p;
+
+                    $item->valor = round($criterio->valor_no_iso / count($items), 2);
 
                 }
 
@@ -178,11 +188,29 @@
             // Obtener los elementos a calificar
             if ($colaborador->jefe == '1') {
                 
-                $items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_asesor', 'S')->get();
+                //$items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_asesor', 'S')->get();
+
+                $items = app('db')->select("    SELECT *
+                                                FROM RRHH_IND_CRITERIO_ITEM T1
+                                                INNER JOIN RRHH_IND_CRITERIO_ITEM_AREA T2
+                                                ON T1.ID = T2.ID_ITEM
+                                                WHERE T2.CODAREA = $colaborador->codarea
+                                                AND T1.ID_CRITERIO = $criterio->id
+                                                AND T1.APLICA_ASESOR = 'S'
+                                                ORDER BY T1.ID ASC");
 
             }else{
 
-                $items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_prestador', 'S')->get();
+                //$items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_prestador', 'S')->get();
+
+                $items = app('db')->select("    SELECT *
+                                                FROM RRHH_IND_CRITERIO_ITEM T1
+                                                INNER JOIN RRHH_IND_CRITERIO_ITEM_AREA T2
+                                                ON T1.ID = T2.ID_ITEM
+                                                WHERE T2.CODAREA = $colaborador->codarea
+                                                AND T1.ID_CRITERIO = $criterio->id
+                                                AND T1.APLICA_PRESTADOR = 'S'
+                                                ORDER BY T1.ID ASC");
 
             }
 
@@ -232,12 +260,16 @@
                         if ($area->iso == '1') {
                             
                             // Si es ISO seleccionar el valor dependiendo si es asesor o colaborador
-                            $valor_item = $colaborador->jefe == '1' ? $item->valor : $item->valor_p;
+                            //$valor_item = $colaborador->jefe == '1' ? $item->valor : $item->valor_p;
+
+                            $valor_item = round($criterio->valor / count($items), 2);
 
                         }else{
 
                             // Si no es ISO asignar 
-                            $valor_item = $colaborador->jefe == '1' ? $item->valor_no_iso : $item->valor_no_iso_p;
+                            //$valor_item = $colaborador->jefe == '1' ? $item->valor_no_iso : $item->valor_no_iso_p;
+
+                            $valor_item = round($criterio->valor_no_iso / count($items), 2);
 
                         }
 
@@ -252,16 +284,26 @@
 
                 }
 
+                /* 
+                    Para obtener el valor de cada ítem dividir el
+                    número de ítems entre el valor del criterio 
+                    dependiendo si es ISO o NO ISO
+                */
+
                 // Especificar cual será el valor
                 if ($area->iso == '1') {
                     
                     // Si es ISO seleccionar el valor dependiendo si es asesor o colaborador
-                    $item->valor = $colaborador->jefe == '1' ? $item->valor : $item->valor_p;
+                    //$item->valor = $colaborador->jefe == '1' ? $item->valor : $item->valor_p;
+
+                    $item->valor = round($criterio->valor / count($items), 2);
 
                 }else{
 
                     // Si no es ISO asignar 
-                    $item->valor = $colaborador->jefe == '1' ? $item->valor_no_iso : $item->valor_no_iso_p;
+                    //$item->valor = $colaborador->jefe == '1' ? $item->valor_no_iso : $item->valor_no_iso_p;
+
+                    $item->valor = round($criterio->valor_no_iso / count($items), 2);
 
                 }
 
