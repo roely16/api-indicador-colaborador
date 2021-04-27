@@ -191,13 +191,44 @@
 
             $permiso = Permiso::where('id_persona', $request->id_persona)->where('id_menu', $menu->id)->first();
 
+            $data_ = [];
+
+            $result = $this->{$menu->fun_verificacion}($data_);
+
             $data = [
                 "escritura" => $permiso->escritura == 'S' ? true : false,
                 "secciones" => $permiso->secciones == 'S' ? true : false,
-                "conf" => $permiso->conf == 'S' ? true : false
+                "conf" => $permiso->conf == 'S' ? true : false,
+                "habilitar" => $result
             ];
 
             return response()->json($data);
+
+        }
+
+        public function periodo_competencias($data){
+               
+            $today = date('d/m/Y');
+
+            $result = app('db')->select("   SELECT 
+                                                COUNT(*) AS TOTAL
+                                            FROM RRHH_IND_EVA_COMP_PERIODO
+                                            WHERE TO_DATE('$today', 'DD/MM/YYYY') BETWEEN FECHA_INICIO
+                                            AND FECHA_FIN");
+
+            if ($result) {
+                
+                $total = $result[0]->total;
+
+                if ($total > 0) {
+                    
+                    return true;
+
+                }
+
+            }
+
+            return false;
 
         }
 
