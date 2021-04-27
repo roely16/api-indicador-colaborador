@@ -11,7 +11,12 @@
 
         public function obtener_menu(Request $request){
 
-            $permisos = app('db')->select(" SELECT T1.*
+            $permisos = app('db')->select(" SELECT 
+                                                T1.*, 
+                                                T2.ACCESO AS MENU_ACCESO, 
+                                                T2.ESCRITURA AS MENU_ESCRITURA, 
+                                                T2.SECCIONES AS MENU_SECCIONES,
+                                                T2.CONF AS MENU_CONF
                                             FROM RRHH_IND_PERMISO T1
                                             INNER JOIN RRHH_IND_MENU T2
                                             ON T1.ID_MENU = T2.ID

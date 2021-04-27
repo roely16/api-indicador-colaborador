@@ -15,11 +15,17 @@
 
             foreach ($menu as &$item) {
                 
+                $item->menu_acceso = $item->acceso;
+                $item->menu_escritura = $item->escritura;
+                $item->menu_secciones = $item->secciones;
+                $item->menu_conf = $item->conf;
+
                 $permiso = Permiso::where('id_persona', $request->nit)->where('id_menu',$item->id)->first();
                 
                 $item->acceso = $permiso ? true : false;
                 $item->escritura = $permiso ? $permiso->escritura == 'S' ? true : false : false;
                 $item->secciones = $permiso ? $permiso->secciones == 'S' ? true : false : false;
+                $item->conf = $permiso ? $permiso->conf == 'S' ? true : false : false;
 
             }
 
@@ -42,12 +48,14 @@
 
                     $escritura = $permiso["escritura"] ? 'S' : 'N';
                     $secciones = $permiso["secciones"] ? 'S' : 'N';
+                    $conf = $permiso["conf"] ? 'S' : 'N';
 
                     if ($permiso_r) {
                         
                         // Actualizar
                         $permiso_r->escritura = $escritura;
                         $permiso_r->secciones = $secciones;
+                        $permiso_r->conf = $conf;
                         $result = $permiso_r->save();
 
                     }else{
@@ -59,6 +67,7 @@
                         $nuevo_permiso->id_menu = $permiso["id"];
                         $nuevo_permiso->escritura = $escritura;
                         $nuevo_permiso->secciones = $secciones;
+                        $nuevo_permiso->conf = $conf;
 
                         $result = $nuevo_permiso->save();
 
@@ -184,7 +193,8 @@
 
             $data = [
                 "escritura" => $permiso->escritura == 'S' ? true : false,
-                "secciones" => $permiso->secciones == 'S' ? true : false
+                "secciones" => $permiso->secciones == 'S' ? true : false,
+                "conf" => $permiso->conf == 'S' ? true : false
             ];
 
             return response()->json($data);
