@@ -236,6 +236,7 @@
                                                     ON T1.ID_PERSONA = T2.NIT
                                                     INNER JOIN RH_AREAS T3
                                                     ON T2.CODAREA = T3.CODAREA
+                                                    WHERE T1.POSPONER IS NULL
                                                     ORDER BY T1.ID DESC");
 
                 $headers = [
@@ -292,6 +293,7 @@
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
                                                     WHERE T2.CODAREA = $request->codarea
+                                                    AND T1.POSPONER IS NULL
                                                     ORDER BY T1.ID DESC");
 
             $headers = [
@@ -477,6 +479,29 @@
                     "status" => 200,
                     "title" => "Excelente",
                     "message" => "El periodo a sido actualizado exitosamente",
+                    "type" => "success"
+                ];
+
+            }
+
+            return response()->json($data);
+
+        }
+
+        public function posponer_evaluacion(Request $request){
+
+            $evaluacion = new EvaluacionCompetencia();
+            $evaluacion->id_persona = $request->nit_colaborador;
+            $evaluacion->periodo = $request->month;
+            $evaluacion->posponer = 'S';
+            $result = $evaluacion->save();
+
+            if ($result) {
+                
+                $data = [
+                    "status" => 200,
+                    "title" => "Excelente",
+                    "message" => "La solicitud a sido realizada exitosamente",
                     "type" => "success"
                 ];
 
