@@ -192,3 +192,6 @@ $router->post('/eliminar_periodo', 'CompetenciaController@eliminar_periodo');
 
 // Editar un periodo
 $router->post('/editar_periodo', 'CompetenciaController@editar_periodo');
+
+// Posponer evaluación de competencias
+$router->post('/posponer_evaluacion', 'CompetenciaController@posponer_evaluacion');
