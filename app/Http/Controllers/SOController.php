@@ -244,7 +244,38 @@
                                                     )");
                 
                 foreach ($integrantes as &$integrante) {
+                    
+                    // Obtener la imagen de cada colaborador
+                    $imagen = app('db')->select("   SELECT *
+                                                    FROM RH_RUTA_PDF
+                                                    WHERE NIT = '$integrante->nit'
+                                                    AND IDCAT = '11'");
+
+                    if ($imagen) {
+                                    
+                        $integrante->imagen = $imagen[0]->ruta;
+
+                        $integrante->imagen = $_SERVER['DOCUMENT_ROOT'] . "/GestionServicios/" . $integrante->imagen;
+
+                        $type = pathinfo($integrante->imagen, PATHINFO_EXTENSION);
                         
+                        try {
+                            
+                            $data = file_get_contents($integrante->imagen);
+                            $integrante->imagen64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+                        } catch (\Throwable $th) {
+                            //throw $th;
+                        }
+                        
+
+                    }else{
+
+                        $integrante->imagen = null;
+                        $integrante->imagen64 = null;
+
+                    }
+
                     $integrante->check = false;
 
                 }
@@ -276,6 +307,41 @@
                                                     ON T1.ID_PERSONA = T2.NIT
                                                     WHERE ID_ACTIVIDAD = $actividad->id");
                 
+                foreach ($responsables as &$responsable) {
+                    
+                    // Obtener la imagen de cada colaborador
+                    $imagen = app('db')->select("   SELECT *
+                                                    FROM RH_RUTA_PDF
+                                                    WHERE NIT = '$responsable->nit'
+                                                    AND IDCAT = '11'");
+
+                    if ($imagen) {
+                                    
+                        $responsable->imagen = $imagen[0]->ruta;
+
+                        $responsable->imagen = $_SERVER['DOCUMENT_ROOT'] . "/GestionServicios/" . $responsable->imagen;
+
+                        $type = pathinfo($responsable->imagen, PATHINFO_EXTENSION);
+                        
+                        try {
+                            
+                            $data = file_get_contents($responsable->imagen);
+                            $responsable->imagen64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+                        } catch (\Throwable $th) {
+                            //throw $th;
+                        }
+                        
+
+                    }else{
+
+                        $responsable->imagen = null;
+                        $responsable->imagen64 = null;
+
+                    }
+
+                }
+
                 $actividad->responsables = $responsables;
 
                 $actividad->check = false;

@@ -41,6 +41,37 @@
 
                 foreach ($empleados as &$empleado) {
                     
+                    // Obtener la imagen de cada colaborador
+                    $imagen = app('db')->select("   SELECT *
+                                                    FROM RH_RUTA_PDF
+                                                    WHERE NIT = '$empleado->nit'
+                                                    AND IDCAT = '11'");
+
+                    if ($imagen) {
+                                    
+                        $empleado->imagen = $imagen[0]->ruta;
+
+                        $empleado->imagen = $_SERVER['DOCUMENT_ROOT'] . "/GestionServicios/" . $empleado->imagen;
+
+                        $type = pathinfo($empleado->imagen, PATHINFO_EXTENSION);
+                        
+                        try {
+                            
+                            $data = file_get_contents($empleado->imagen);
+                            $empleado->imagen64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+                        } catch (\Throwable $th) {
+                            //throw $th;
+                        }
+                        
+
+                    }else{
+
+                        $empleado->imagen = null;
+                        $empleado->imagen64 = null;
+
+                    }
+
                     $empleado->color_card = null;
 
                 }
