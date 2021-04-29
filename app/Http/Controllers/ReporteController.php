@@ -527,6 +527,31 @@
 
         }
 
+        public function correcciones($data){
+
+            $data = [
+                "calificacion" => 100,
+                "editable" => false,
+                "info_calculo" => "Cálculo realizado automáticamente.",
+                "motivos" => []
+            ];
+
+            return $data;
+        }
+
+        public function servicios_no_conformes($data){
+
+            $data = [
+                "calificacion" => 100,
+                "editable" => false,
+                "info_calculo" => "Cálculo realizado automáticamente.",
+                "motivos" => []
+            ];
+
+            return $data;
+
+        }
+
     }
 
 ?>
