@@ -104,6 +104,7 @@
 
                         $criterio->color = $result["color"];
                         $criterio->calificacion = $result["calificacion"];
+                        $criterio->pendiente = $result["pendiente"];
 
                         /*
                             TODO
@@ -143,6 +144,11 @@
                 $colaborador->porcentaje_colega = $result[0]->porcentaje_colega;
                 $colaborador->porcentaje_asesor = $result[0]->porcentaje_asesor;
                 $colaborador->temporadaid = $result[0]->temporadaid;
+                $colaborador->pendiente = false;
+
+            }else{
+
+                $colaborador->pendiente = true;
 
             }
 
@@ -264,10 +270,12 @@
                 if ($cumplio) {
                     
                     $colaborador->calificacion = ($cumplio / $total) * 100;
+                    $colaborador->pendiente = false;
 
                 }else{
 
-                    $colaborador->calificacion = 0;
+                    $colaborador->calificacion = null;
+                    $colaborador->pendiente = true;
 
                 }
 
@@ -279,17 +287,25 @@
 
             // Asignar un color
 
-            if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
+            if (!$colaborador->pendiente) {
+                           
+                if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
 
-                $colaborador->color = 'red';
+                    $colaborador->color = 'red';
 
-            }elseif( $colaborador->calificacion >= 60 && $colaborador->calificacion < 80){
+                }elseif( $colaborador->calificacion >= 60 && $colaborador->calificacion < 80){
 
-                $colaborador->color = 'orange';
+                    $colaborador->color = 'orange';
+
+                }else{
+
+                    $colaborador->color = 'green';
+
+                }
 
             }else{
 
-                $colaborador->color = 'green';
+                $colaborador->color = 'blue';
 
             }
 
@@ -358,29 +374,40 @@
             $result = app('db')->select("   SELECT *
                                             FROM RRHH_IND_EVA_COMPETENCIA
                                             WHERE ID_PERSONA = '$colaborador->nit'
+                                            AND POSPONER IS NULL
                                             ORDER BY ID DESC");
 
             if ($result) {
                 
                 $colaborador->calificacion = $result[0]->calificacion;
+                $colaborador->pendiente = false;
 
             }else{
 
-                $colaborador->calificacion = 0;
+                $colaborador->calificacion = null;
+                $colaborador->pendiente = true;
 
             }
 
-            if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
+            if (!$colaborador->pendiente) {
+                
+                if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
 
-                $colaborador->color = 'red';
+                    $colaborador->color = 'red';
 
-            }elseif( $colaborador->calificacion >= 60 && $colaborador->calificacion < 80){
+                }elseif( $colaborador->calificacion >= 60 && $colaborador->calificacion < 80){
 
-                $colaborador->color = 'orange';
+                    $colaborador->color = 'orange';
+
+                }else{
+
+                    $colaborador->color = 'green';
+
+                }
 
             }else{
 
-                $colaborador->color = 'green';
+                $colaborador->color = 'blue';
 
             }
 
