@@ -107,8 +107,11 @@
                         
                         $data = [
                             "usuario" => $colaborador->usuario,
+                            "usuario2" => $colaborador->usuario_2,
                             "nit" => $colaborador->nit,
-                            "month" => $request->month
+                            "month" => $request->month,
+                            "codarea" => $colaborador->codarea,
+                            "id_item" => $item->id
                         ];
 
                         $result = $this->{$item->funcion_calculo}($data);
@@ -116,7 +119,8 @@
                         $item->calificacion = $result["calificacion"];
                         $item->editable = $result["editable"];
                         $item->info_calculo = $result["info_calculo"];
-                        $item->motivos = $result["motivos"];                        
+                        $item->motivos = $result["motivos"];      
+                        $item->data_calculo = array_key_exists('data_calculo', $result) ? $result["data_calculo"] : null;                  
 
                     }else{
 
@@ -245,8 +249,11 @@
                         
                         $data = [
                             "usuario" => $colaborador->usuario,
+                            "usuario2" => $colaborador->usuario_2,
                             "nit" => $colaborador->nit,
-                            "month" => $evaluacion->mes
+                            "month" => $evaluacion->mes,
+                            "codarea" => $colaborador->codarea,
+                            "id_item" => $item->id
                         ];
 
                         $result = $this->{$item->funcion_calculo}($data);
@@ -529,11 +536,33 @@
 
         public function correcciones($data){
 
+            $codarea = $data["codarea"];
+            $id_item = $data["id_item"];
+
+            /* Buscar la configuración del cálculo del item */
+            $result = app('db')->select("   SELECT *
+                                            FROM RRHH_IND_ITEM_AREA
+                                            WHERE CODAREA = '$codarea'
+                                            AND ID_ITEM = '$id_item'");
+
+            if ($result) {
+                
+                $result = $result[0];
+
+                if ($result->func_calculo) {
+                    
+                    $datos = $this->{$result->func_calculo}($data);
+
+                }
+
+            }
+
             $data = [
                 "calificacion" => 100,
                 "editable" => false,
                 "info_calculo" => "Cálculo realizado automáticamente.",
-                "motivos" => []
+                "motivos" => [],
+                "data_calculo" => $datos
             ];
 
             return $data;
@@ -541,11 +570,444 @@
 
         public function servicios_no_conformes($data){
 
+            $codarea = $data["codarea"];
+            $id_item = $data["id_item"];
+
+            /* Buscar la configuración del cálculo del item */
+            $result = app('db')->select("   SELECT *
+                                            FROM RRHH_IND_ITEM_AREA
+                                            WHERE CODAREA = '$codarea'
+                                            AND ID_ITEM = '$id_item'");
+
+            if ($result) {
+                
+                $result = $result[0];
+
+                if ($result->func_calculo) {
+                    
+                    $datos = $this->{$result->func_calculo}($data);
+
+                }
+
+            }
+
             $data = [
                 "calificacion" => 100,
                 "editable" => false,
                 "info_calculo" => "Cálculo realizado automáticamente.",
-                "motivos" => []
+                "motivos" => [],
+                "data_calculo" => $datos
+            ];
+
+            return $data;
+
+        }
+
+        /* Funciones para el cálculo de correcciones por sección */
+
+        public function c_nomenclatura($data){
+            
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+
+            /* Obtener los operados */
+
+            $result = app('db')
+                        ->connection('catastrousr')
+                        ->select("  SELECT  
+                                            COUNT(*) AS CANTIDAD
+                                    FROM  CDO_DOCUMENTO CD,
+                                            CDO_BANDEJA CB
+                                    WHERE  CD.ANIO = CB.ANIO
+                                            AND CD.DOCUMENTO = CB.DOCUMENTO
+                                            AND CD.CODIGOCLASE = CB.CODIGOCLASE
+                                            AND CB.STATUS_TAREA = 5
+                                            AND CB.DEPENDENCIA = 90
+                                            AND TO_CHAR(CD.FECHA,'YYYY-MM') = '$month'
+                                            AND CB.USER_APLIC = '$usuario'");
+
+            /* Obtener las correcciones */
+
+            $correcciones = app('db')
+                                ->connection('portales')
+                                ->select("  SELECT 
+                                                COUNT(*) AS CORRECCIONES
+                                            FROM ISO_NOMENCLATURA
+                                            WHERE HISTORIAL LIKE '%$usuario%'
+                                            AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
+                                            AND RESULTADO = 'RECHAZADO'
+                                            AND TIPO IS NULL");
+
+            $data= [
+                "operados" => $result ? $result[0]->cantidad : 0,
+                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+            ];
+
+            return $data;
+
+        }
+
+        public function c_sima($data){
+
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+
+            /* Obtener los operados */
+
+            $result = app('db')
+                        ->connection('catastrousr')
+                        ->select("  SELECT  
+                                            COUNT(*) AS CANTIDAD
+                                    FROM  CDO_DOCUMENTO CD,
+                                            CDO_BANDEJA CB
+                                    WHERE  CD.ANIO = CB.ANIO
+                                            AND CD.DOCUMENTO = CB.DOCUMENTO
+                                            AND CD.CODIGOCLASE = CB.CODIGOCLASE
+                                            AND CB.STATUS_TAREA = 5
+                                            AND CB.DEPENDENCIA = 94
+                                            AND TO_CHAR(CD.FECHA,'YYYY-MM') = '$month'
+                                            AND CB.USER_APLIC = '$usuario'");
+
+            /* Obtener las correcciones */
+
+            $correcciones = app('db')
+                            ->connection('catastrousr')
+                            ->select("  SELECT 
+                                            COUNT(*) AS CORRECCIONES
+                                        FROM CATASTRO.CDO_Q_DOCUMENTO
+                                        WHERE ERROR = 1
+                                        AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
+                                        AND USUARIO = '$usuario'
+                                        AND TIPO IS NULL");
+
+            $data= [
+                "operados" => $result ? $result[0]->cantidad : 0,
+                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+            ];
+
+            return $data;
+
+        }
+
+        public function c_avisos_notariales($data){
+
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+
+            /* Obtener los operados */
+
+            $result = app('db')
+                        ->connection('catastrousr')
+                        ->select("  SELECT  
+                                            COUNT(*) AS CANTIDAD
+                                    FROM  CDO_DOCUMENTO CD,
+                                            CDO_BANDEJA CB
+                                    WHERE  CD.ANIO = CB.ANIO
+                                            AND CD.DOCUMENTO = CB.DOCUMENTO
+                                            AND CD.CODIGOCLASE = CB.CODIGOCLASE
+                                            AND CB.STATUS_TAREA = 5
+                                            AND CB.DEPENDENCIA = 18
+                                            AND TO_CHAR(CD.FECHA,'YYYY-MM') = '$month'
+                                            AND CB.USER_APLIC = '$usuario'");
+
+            /* Obtener las correcciones */
+
+            $correcciones = app('db')
+                                ->connection('portales')
+                                ->select("  SELECT 
+                                                COUNT(*) AS CORRECCIONES
+                                            FROM ISO_AVISOS
+                                            WHERE HISTORIAL LIKE '%$usuario%'
+                                            AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
+                                            AND RESULTADO = 'RECHAZADO'
+                                            AND TIPO IS NULL");
+
+            $data= [
+                "operados" => $result ? $result[0]->cantidad : 0,
+                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+            ];
+
+            return $data;
+
+        }
+
+        public function c_atencion($data){
+
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+
+            /* Obtener los operados */
+
+            $result = app('db')
+                        ->connection('catastrousr')
+                        ->select("  SELECT
+                                        COUNT(*) AS CANTIDAD
+                                    FROM  CATASTRO.AAV_INGRESO_EXPEDIENTE
+                                    WHERE  TO_CHAR(FECHA,'YYYY-MM') = '$month'
+                                    AND USUARIO = '$usuario'");
+
+            /* Obtener las correcciones */
+
+            $correcciones = app('db')
+                                ->connection('portales')
+                                ->select("  SELECT 
+                                                COUNT(*) AS CORRECCIONES
+                                            FROM ISO_ATENCION_USUARIO
+                                            WHERE USUARIO_TRABAJO LIKE '%$usuario%'
+                                            AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
+                                            AND RESULTADO = 'RECHAZADO'
+                                            AND TIPO IS NULL");
+
+            $data= [
+                "operados" => $result ? $result[0]->cantidad : 0,
+                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+            ];
+
+            return $data;
+        }
+
+        public function c_cuenta_corriente($data){
+
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+
+            /* Obtener los operados */
+
+            $result = app('db')
+                        ->connection('catastrousr')
+                        ->select("  SELECT  
+                                            COUNT(*) AS CANTIDAD
+                                    FROM  CDO_DOCUMENTO CD,
+                                            CDO_BANDEJA CB
+                                    WHERE  CD.ANIO = CB.ANIO
+                                            AND CD.DOCUMENTO = CB.DOCUMENTO
+                                            AND CD.CODIGOCLASE = CB.CODIGOCLASE
+                                            AND CB.STATUS_TAREA = 5
+                                            AND CB.DEPENDENCIA = 30
+                                            AND TO_CHAR(CD.FECHA,'YYYY-MM') = '$month'
+                                            AND CB.USER_APLIC = '$usuario'");
+
+            /* Obtener las correcciones */
+
+            $correcciones = app('db')
+                            ->connection('catastrousr')
+                            ->select("  SELECT 
+                                            COUNT(*) AS CORRECCIONES
+                                        FROM CATASTRO.CDO_CALIDAD_CC
+                                        WHERE ERROR = 'S'
+                                        AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
+                                        AND USUARIO = '$usuario'
+                                        AND TIPO IS NULL");
+
+            $data= [
+                "operados" => $result ? $result[0]->cantidad : 0,
+                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+            ];
+
+            return $data;
+
+        }
+
+
+        /* Funcione para el cálculo de servicios no conformes por sección */
+        public function s_nomenclatura($data){
+
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+
+            /* Obtener los operados */
+
+            $result = app('db')
+                        ->connection('catastrousr')
+                        ->select("  SELECT  
+                                            COUNT(*) AS CANTIDAD
+                                    FROM  CDO_DOCUMENTO CD,
+                                            CDO_BANDEJA CB
+                                    WHERE  CD.ANIO = CB.ANIO
+                                            AND CD.DOCUMENTO = CB.DOCUMENTO
+                                            AND CD.CODIGOCLASE = CB.CODIGOCLASE
+                                            AND CB.STATUS_TAREA = 5
+                                            AND CB.DEPENDENCIA = 90
+                                            AND TO_CHAR(CD.FECHA,'YYYY-MM') = '$month'
+                                            AND CB.USER_APLIC = '$usuario'");
+
+            /* Obtener las correcciones */
+
+            $correcciones = app('db')
+                                ->connection('portales')
+                                ->select("  SELECT 
+                                                COUNT(*) AS CORRECCIONES
+                                            FROM ISO_NOMENCLATURA
+                                            WHERE HISTORIAL LIKE '%$usuario%'
+                                            AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
+                                            AND RESULTADO = 'RECHAZADO'
+                                            AND TIPO = 'SNC'");
+
+            $data= [
+                "operados" => $result ? $result[0]->cantidad : 0,
+                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+            ];
+
+            return $data;
+
+        }
+
+        public function s_sima($data){
+
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+
+            /* Obtener los operados */
+
+            $result = app('db')
+                        ->connection('catastrousr')
+                        ->select("  SELECT  
+                                            COUNT(*) AS CANTIDAD
+                                    FROM  CDO_DOCUMENTO CD,
+                                            CDO_BANDEJA CB
+                                    WHERE  CD.ANIO = CB.ANIO
+                                            AND CD.DOCUMENTO = CB.DOCUMENTO
+                                            AND CD.CODIGOCLASE = CB.CODIGOCLASE
+                                            AND CB.STATUS_TAREA = 5
+                                            AND CB.DEPENDENCIA = 94
+                                            AND TO_CHAR(CD.FECHA,'YYYY-MM') = '$month'
+                                            AND CB.USER_APLIC = '$usuario'");
+
+            /* Obtener las correcciones */
+
+            $correcciones = app('db')
+                            ->connection('catastrousr')
+                            ->select("  SELECT 
+                                            COUNT(*) AS CORRECCIONES
+                                        FROM CATASTRO.CDO_Q_DOCUMENTO
+                                        WHERE ERROR = 1
+                                        AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
+                                        AND USUARIO = '$usuario'
+                                        AND TIPO = 'SNC'");
+
+            $data= [
+                "operados" => $result ? $result[0]->cantidad : 0,
+                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+            ];
+
+            return $data;
+
+        }
+
+        public function s_avisos_notariales($data){
+
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+
+            /* Obtener los operados */
+
+            $result = app('db')
+                        ->connection('catastrousr')
+                        ->select("  SELECT  
+                                            COUNT(*) AS CANTIDAD
+                                    FROM  CDO_DOCUMENTO CD,
+                                            CDO_BANDEJA CB
+                                    WHERE  CD.ANIO = CB.ANIO
+                                            AND CD.DOCUMENTO = CB.DOCUMENTO
+                                            AND CD.CODIGOCLASE = CB.CODIGOCLASE
+                                            AND CB.STATUS_TAREA = 5
+                                            AND CB.DEPENDENCIA = 18
+                                            AND TO_CHAR(CD.FECHA,'YYYY-MM') = '$month'
+                                            AND CB.USER_APLIC = '$usuario'");
+
+            /* Obtener las correcciones */
+
+            $correcciones = app('db')
+                                ->connection('portales')
+                                ->select("  SELECT 
+                                                COUNT(*) AS CORRECCIONES
+                                            FROM ISO_AVISOS
+                                            WHERE HISTORIAL LIKE '%$usuario%'
+                                            AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
+                                            AND RESULTADO = 'RECHAZADO'
+                                            AND TIPO = 'SNC'");
+
+            $data= [
+                "operados" => $result ? $result[0]->cantidad : 0,
+                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+            ];
+
+            return $data;
+
+        }
+
+        public function s_atencion($data){
+
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+
+            /* Obtener los operados */
+
+            $result = app('db')
+                        ->connection('catastrousr')
+                        ->select("  SELECT
+                                        COUNT(*) AS CANTIDAD
+                                    FROM  CATASTRO.AAV_INGRESO_EXPEDIENTE
+                                    WHERE  TO_CHAR(FECHA,'YYYY-MM') = '$month'
+                                    AND USUARIO = '$usuario'");
+
+            /* Obtener las correcciones */
+
+            $correcciones = app('db')
+                                ->connection('portales')
+                                ->select("  SELECT 
+                                                COUNT(*) AS CORRECCIONES
+                                            FROM ISO_ATENCION_USUARIO
+                                            WHERE USUARIO_TRABAJO LIKE '%$usuario%'
+                                            AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
+                                            AND RESULTADO = 'RECHAZADO'
+                                            AND TIPO = 'SNC'");
+
+            $data= [
+                "operados" => $result ? $result[0]->cantidad : 0,
+                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+            ];
+
+            return $data;
+
+        }
+
+        public function s_cuenta_corriente($data){
+
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+
+            /* Obtener los operados */
+
+            $result = app('db')
+                        ->connection('catastrousr')
+                        ->select("  SELECT  
+                                            COUNT(*) AS CANTIDAD
+                                    FROM  CDO_DOCUMENTO CD,
+                                            CDO_BANDEJA CB
+                                    WHERE  CD.ANIO = CB.ANIO
+                                            AND CD.DOCUMENTO = CB.DOCUMENTO
+                                            AND CD.CODIGOCLASE = CB.CODIGOCLASE
+                                            AND CB.STATUS_TAREA = 5
+                                            AND CB.DEPENDENCIA = 30
+                                            AND TO_CHAR(CD.FECHA,'YYYY-MM') = '$month'
+                                            AND CB.USER_APLIC = '$usuario'");
+
+            /* Obtener las correcciones */
+
+            $correcciones = app('db')
+                            ->connection('catastrousr')
+                            ->select("  SELECT 
+                                            COUNT(*) AS CORRECCIONES
+                                        FROM CATASTRO.CDO_CALIDAD_CC
+                                        WHERE ERROR = 'S'
+                                        AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
+                                        AND USUARIO = '$usuario'
+                                        AND TIPO = 'SNC'");
+
+            $data= [
+                "operados" => $result ? $result[0]->cantidad : 0,
+                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
             ];
 
             return $data;

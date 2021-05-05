@@ -252,21 +252,23 @@
                                                     AND IDCAT = '11'");
 
                     if ($imagen) {
-                                    
-                        $integrante->imagen = $imagen[0]->ruta;
-
-                        $integrante->imagen = $_SERVER['DOCUMENT_ROOT'] . "/GestionServicios/" . $integrante->imagen;
-
-                        $type = pathinfo($integrante->imagen, PATHINFO_EXTENSION);
                         
-                        try {
-                            
-                            $data = file_get_contents($integrante->imagen);
-                            $integrante->imagen64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                        $integrante->imagen64 =  'http://172.23.25.31/GestionServicios/' . $imagen[0]->ruta;
 
-                        } catch (\Throwable $th) {
-                            //throw $th;
-                        }
+                        // $integrante->imagen = $imagen[0]->ruta;
+
+                        // $integrante->imagen = $_SERVER['DOCUMENT_ROOT'] . "/GestionServicios/" . $integrante->imagen;
+
+                        // $type = pathinfo($integrante->imagen, PATHINFO_EXTENSION);
+                        
+                        // try {
+                            
+                        //     $data = file_get_contents($integrante->imagen);
+                        //     $integrante->imagen64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+                        // } catch (\Throwable $th) {
+                        //     //throw $th;
+                        // }
                         
 
                     }else{
@@ -316,21 +318,23 @@
                                                     AND IDCAT = '11'");
 
                     if ($imagen) {
-                                    
-                        $responsable->imagen = $imagen[0]->ruta;
-
-                        $responsable->imagen = $_SERVER['DOCUMENT_ROOT'] . "/GestionServicios/" . $responsable->imagen;
-
-                        $type = pathinfo($responsable->imagen, PATHINFO_EXTENSION);
                         
-                        try {
-                            
-                            $data = file_get_contents($responsable->imagen);
-                            $responsable->imagen64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                        $responsable->imagen64 =  'http://172.23.25.31/GestionServicios/' . $imagen[0]->ruta;
 
-                        } catch (\Throwable $th) {
-                            //throw $th;
-                        }
+                        // $responsable->imagen = $imagen[0]->ruta;
+
+                        // $responsable->imagen = $_SERVER['DOCUMENT_ROOT'] . "/GestionServicios/" . $responsable->imagen;
+
+                        // $type = pathinfo($responsable->imagen, PATHINFO_EXTENSION);
+                        
+                        // try {
+                            
+                        //     $data = file_get_contents($responsable->imagen);
+                        //     $responsable->imagen64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+                        // } catch (\Throwable $th) {
+                        //     //throw $th;
+                        // }
                         
 
                     }else{
