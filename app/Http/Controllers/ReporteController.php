@@ -262,6 +262,7 @@
                         $item->editable = $result["editable"];
                         $item->info_calculo = $result["info_calculo"];
                         $item->motivos = $result["motivos"];  
+                        $item->data_calculo = array_key_exists('data_calculo', $result) ? $result["data_calculo"] : null;  
                         
                     }else{
 
@@ -553,12 +554,34 @@
                     
                     $datos = $this->{$result->func_calculo}($data);
 
+                    $datos["show_correcciones"] = true;
+                    $datos["editable"] = false;
+
+                }else{
+
+                    $datos = [
+                        "operados" => null,
+                        "correcciones" => null,
+                        "editable" => true,
+                        "show_correcciones" => true
+                    ];
+
                 }
 
             }
 
+            $datos = (object) $datos;
+
+            $porcentaje_resta = 0;
+
+            if ($result->func_calculo && $datos->operados) {
+                
+                $porcentaje_resta = round(100 * ($datos->correcciones / $datos->operados), 2);
+
+            }
+
             $data = [
-                "calificacion" => 100,
+                "calificacion" => $result->func_calculo ? 100 - $porcentaje_resta : 100,
                 "editable" => false,
                 "info_calculo" => "Cálculo realizado automáticamente.",
                 "motivos" => [],
@@ -587,12 +610,34 @@
                     
                     $datos = $this->{$result->func_calculo}($data);
 
+                    $datos["show_snc"] = true;
+                    $datos["editable"] = false;
+
+                }else{
+
+                    $datos = [
+                        "operados" => null,
+                        "snc" => null,
+                        "editable" => true,
+                        "show_snc" => true
+                    ];
+
                 }
 
             }
 
+            $datos = (object) $datos;
+
+            $porcentaje_resta = 0;
+
+            if ($result->func_calculo && $datos->operados) {
+                
+                $porcentaje_resta = round(100 * ($datos->snc / $datos->operados), 2);
+
+            }
+
             $data = [
-                "calificacion" => 100,
+                "calificacion" => $result->func_calculo ? 100 - $porcentaje_resta : 100,
                 "editable" => false,
                 "info_calculo" => "Cálculo realizado automáticamente.",
                 "motivos" => [],
@@ -845,7 +890,7 @@
 
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+                "snc" => $correcciones ? $correcciones[0]->correcciones : 0
             ];
 
             return $data;
@@ -887,7 +932,7 @@
 
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+                "snc" => $correcciones ? $correcciones[0]->correcciones : 0
             ];
 
             return $data;
@@ -929,7 +974,7 @@
 
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+                "snc" => $correcciones ? $correcciones[0]->correcciones : 0
             ];
 
             return $data;
@@ -965,7 +1010,7 @@
 
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+                "snc" => $correcciones ? $correcciones[0]->correcciones : 0
             ];
 
             return $data;
@@ -1007,7 +1052,7 @@
 
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "correcciones" => $correcciones ? $correcciones[0]->correcciones : 0
+                "snc" => $correcciones ? $correcciones[0]->correcciones : 0
             ];
 
             return $data;

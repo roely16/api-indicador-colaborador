@@ -39,6 +39,28 @@
 
                 }
 
+                if ($criterio["data_calculo"] != null) {
+
+                    $data_calculo = $criterio["data_calculo"];
+
+                    $detalle_evaluacion->operados = $criterio["data_calculo"]["operados"];
+
+                    // Si existen SNC
+                    if (array_key_exists('snc', $data_calculo)) {
+
+                        $detalle_evaluacion->snc = $data_calculo["snc"];
+
+                    }
+
+                    // Si existen correcciones
+                    if (array_key_exists('correcciones', $data_calculo)) {
+                        
+                        $detalle_evaluacion->correcciones = $data_calculo["correcciones"];
+                        
+                    }
+
+                }
+
                 if (array_key_exists('motivos', $criterio)) {
 
                     // Validar que existan motivos
@@ -303,7 +325,39 @@
 
                 }
 
-                
+                if ($item["data_calculo"] != null) {
+
+                    $data_calculo = $item["data_calculo"];
+
+                    // Si existen SNC
+                    if (array_key_exists('snc', $data_calculo)) {
+
+                        $result = app('db')
+                                    ->table('rrhh_ind_evaluacion_detalle')
+                                    ->where('id_evaluacion', $request->id_evaluacion)
+                                    ->where('id_item', $item["id"])
+                                    ->update([
+                                        'operados' => $data_calculo["operados"],
+                                        'snc' => $data_calculo["snc"]
+                                    ]);
+
+                    }
+
+                    // Si existen correcciones
+                    if (array_key_exists('correcciones', $data_calculo)) {
+                        
+                        $result = app('db')
+                                    ->table('rrhh_ind_evaluacion_detalle')
+                                    ->where('id_evaluacion', $request->id_evaluacion)
+                                    ->where('id_item', $item["id"])
+                                    ->update([
+                                        'operados' => $data_calculo["operados"],
+                                        'correcciones' => $data_calculo["correcciones"]
+                                    ]);
+                        
+                    }
+
+                }
 
 
             }
