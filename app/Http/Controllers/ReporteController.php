@@ -253,7 +253,8 @@
                             "nit" => $colaborador->nit,
                             "month" => $evaluacion->mes,
                             "codarea" => $colaborador->codarea,
-                            "id_item" => $item->id
+                            "id_item" => $item->id,
+                            "id_evaluacion" => $request->id_evaluacion
                         ];
 
                         $result = $this->{$item->funcion_calculo}($data);
@@ -559,9 +560,33 @@
 
                 }else{
 
+                    // Si existe un id_evaluación obtener el detalle
+                    if (array_key_exists('id_evaluacion', $data)) {
+                        
+                        $id_evaluacion = $data["id_evaluacion"];
+
+                        // Buscar el detalle del item y de la evaluación
+                        $detalle_evaluacion = app('db')->select("   SELECT 
+                                                                        OPERADOS, 
+                                                                        CORRECCIONES
+                                                                    FROM RRHH_IND_EVALUACION_DETALLE
+                                                                    WHERE ID_EVALUACION = $id_evaluacion
+                                                                    AND ID_ITEM = $id_item");
+
+                        if ($detalle_evaluacion) {
+                            
+                            $detalle_evaluacion = $detalle_evaluacion[0];
+
+                        }
+                    }else{
+
+                        $detalle_evaluacion = null;
+
+                    }
+
                     $datos = [
-                        "operados" => null,
-                        "correcciones" => null,
+                        "operados" => $detalle_evaluacion ?  $detalle_evaluacion->operados : null,
+                        "correcciones" => $detalle_evaluacion ?  $detalle_evaluacion->correcciones : null,
                         "editable" => true,
                         "show_correcciones" => true
                     ];
@@ -578,10 +603,18 @@
                 
                 $porcentaje_resta = round(100 * ($datos->correcciones / $datos->operados), 2);
 
+            }else{
+
+                if (array_key_exists('id_evaluacion', $data)) {
+
+                    $porcentaje_resta = round(100 * ($datos->correcciones / $datos->operados), 2);
+
+                }
+
             }
 
             $data = [
-                "calificacion" => $result->func_calculo ? 100 - $porcentaje_resta : 100,
+                "calificacion" => $result->func_calculo ? 100 - $porcentaje_resta : 100 - $porcentaje_resta,
                 "editable" => false,
                 "info_calculo" => "Cálculo realizado automáticamente.",
                 "motivos" => [],
@@ -614,10 +647,35 @@
                     $datos["editable"] = false;
 
                 }else{
+                    
+                     // Si existe un id_evaluación obtener el detalle
+                     if (array_key_exists('id_evaluacion', $data)) {
+                        
+                        $id_evaluacion = $data["id_evaluacion"];
+
+                        // Buscar el detalle del item y de la evaluación
+                        $detalle_evaluacion = app('db')->select("   SELECT 
+                                                                        OPERADOS, 
+                                                                        SNC
+                                                                    FROM RRHH_IND_EVALUACION_DETALLE
+                                                                    WHERE ID_EVALUACION = $id_evaluacion
+                                                                    AND ID_ITEM = $id_item");
+
+                        if ($detalle_evaluacion) {
+                            
+                            $detalle_evaluacion = $detalle_evaluacion[0];
+
+                        }
+
+                    }else{
+
+                        $detalle_evaluacion = null;
+
+                    }
 
                     $datos = [
-                        "operados" => null,
-                        "snc" => null,
+                        "operados" => $detalle_evaluacion ?  $detalle_evaluacion->operados : null,
+                        "snc" => $detalle_evaluacion ?  $detalle_evaluacion->snc : null,
                         "editable" => true,
                         "show_snc" => true
                     ];
@@ -634,10 +692,18 @@
                 
                 $porcentaje_resta = round(100 * ($datos->snc / $datos->operados), 2);
 
+            }else{
+
+                if (array_key_exists('id_evaluacion', $data)) {
+
+                    $porcentaje_resta = round(100 * ($datos->snc / $datos->operados), 2);
+
+                }
+
             }
 
             $data = [
-                "calificacion" => $result->func_calculo ? 100 - $porcentaje_resta : 100,
+                "calificacion" => $result->func_calculo ? 100 - $porcentaje_resta : 100 - $porcentaje_resta,
                 "editable" => false,
                 "info_calculo" => "Cálculo realizado automáticamente.",
                 "motivos" => [],
