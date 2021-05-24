@@ -44,8 +44,18 @@
                 $result->imagen = $_SERVER['DOCUMENT_ROOT'] . '/GestionServicios/' . $result->imagen;
 
                 $type = pathinfo($result->imagen, PATHINFO_EXTENSION);
-                $data = file_get_contents($result->imagen);
-                $result->imagen64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+                try {
+                    
+                    $data = file_get_contents($result->imagen);
+                    $result->imagen64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+
+                } catch (\Throwable $th) {
+                    //throw $th;
+                }
+                
+
+                
 
             }else{
 

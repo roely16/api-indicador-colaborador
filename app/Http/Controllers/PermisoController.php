@@ -19,6 +19,7 @@
                 $item->menu_escritura = $item->escritura;
                 $item->menu_secciones = $item->secciones;
                 $item->menu_conf = $item->conf;
+                $item->menu_admin = $item->admin;
 
                 $permiso = Permiso::where('id_persona', $request->nit)->where('id_menu',$item->id)->first();
                 
@@ -26,6 +27,7 @@
                 $item->escritura = $permiso ? $permiso->escritura == 'S' ? true : false : false;
                 $item->secciones = $permiso ? $permiso->secciones == 'S' ? true : false : false;
                 $item->conf = $permiso ? $permiso->conf == 'S' ? true : false : false;
+                $item->admin = $permiso ? $permiso->admin == 'S' ? true : false : false;
 
             }
 
@@ -49,6 +51,7 @@
                     $escritura = $permiso["escritura"] ? 'S' : 'N';
                     $secciones = $permiso["secciones"] ? 'S' : 'N';
                     $conf = $permiso["conf"] ? 'S' : 'N';
+                    $admin = $permiso["admin"] ? 'S' : 'N';
 
                     if ($permiso_r) {
                         
@@ -56,6 +59,7 @@
                         $permiso_r->escritura = $escritura;
                         $permiso_r->secciones = $secciones;
                         $permiso_r->conf = $conf;
+                        $permiso_r->admin = $admin;
                         $result = $permiso_r->save();
 
                     }else{
@@ -68,6 +72,7 @@
                         $nuevo_permiso->escritura = $escritura;
                         $nuevo_permiso->secciones = $secciones;
                         $nuevo_permiso->conf = $conf;
+                        $nuevo_permiso->admin = $admin;
 
                         $result = $nuevo_permiso->save();
 
@@ -208,6 +213,7 @@
                 "escritura" => $permiso->escritura == 'S' ? true : false,
                 "secciones" => $permiso->secciones == 'S' ? true : false,
                 "conf" => $permiso->conf == 'S' ? true : false,
+                "admin" => $permiso->admin == 'S' ? true : false,
                 "habilitar" => $result
             ];
 

@@ -176,6 +176,8 @@
 
             }else{
 
+                // Buscar las evaluaciones del personal que depende del usuario
+
                 // Buscar solo las evaluaciones de la sección del usuario
                 $evaluaciones = app('db')->select(" SELECT 
                                                         T1.ID, 
@@ -191,6 +193,7 @@
                                                     ON T1.ID_PERSONA = T2.NIT
                                                     WHERE T1.ID_CRITERIO = $criterio->id
                                                     AND T2.CODAREA = $request->codarea
+                                                    AND T2.DEPENDE = '$request->nit'
                                                     ORDER BY T1.ID DESC");
 
                 $headers = [
