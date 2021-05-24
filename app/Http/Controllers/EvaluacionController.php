@@ -19,7 +19,11 @@
             $evaluacion->id_persona = $request->id_persona;
             $evaluacion->valor_criterio = $request->criterio["valor"];
             $evaluacion->mes = $request->month;
+
+            
             $evaluacion->calificacion = $request->calificacion;
+
+
             $evaluacion->save();
 
             //$criterio = Criterio::where('modulo', $request->url)->first();
@@ -39,7 +43,7 @@
 
                 }
 
-                if ($criterio["data_calculo"] != null) {
+                if (array_key_exists('data_calculo', $criterio)) {
 
                     $data_calculo = $criterio["data_calculo"];
 

@@ -22,6 +22,22 @@
 
             foreach ($empleados as &$empleado) {
                 
+                // Obtener la imagen de cada colaborador
+                $imagen = app('db')->select("   SELECT *
+                                                FROM RH_RUTA_PDF
+                                                WHERE NIT = '$empleado->nit'
+                                                AND IDCAT = '11'");
+
+                if ($imagen) {
+
+                    $empleado->imagen64 =  'http://172.23.25.31/GestionServicios/' . $imagen[0]->ruta;
+
+                }else{
+
+                    $empleado->imagen = null;
+                    $empleado->imagen64 = null;
+
+                }
                 $criterios = Criterio::all();
 
                 $empleado->nombre_completo = $empleado->nombre . ' ' . $empleado->apellido;
