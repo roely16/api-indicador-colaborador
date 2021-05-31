@@ -180,6 +180,14 @@
 
         }
 
+        public function obtener_todas_areas(){
+
+            $menu = Area::where('estatus', 'A')->get();
+
+            return response()->json($menu);
+
+        }
+
     }
 
 ?>

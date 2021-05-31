@@ -195,3 +195,9 @@ $router->post('/editar_periodo', 'CompetenciaController@editar_periodo');
 
 // Posponer evaluación de competencias
 $router->post('/posponer_evaluacion', 'CompetenciaController@posponer_evaluacion');
+
+// Obtener todas las areas
+$router->post('/obtener_todas_areas', 'AreaController@obtener_todas_areas');
+
+// Equipo Indicadores
+$router->post('/equipo_indicadores', 'DashboardController@equipo_indicadores');
