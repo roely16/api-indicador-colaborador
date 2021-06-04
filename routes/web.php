@@ -201,3 +201,6 @@ $router->post('/obtener_todas_areas', 'AreaController@obtener_todas_areas');
 
 // Equipo Indicadores
 $router->post('/equipo_indicadores', 'DashboardController@equipo_indicadores');
+
+// Generar los datos para exportar a Excel 
+$router->post('/datos_excel', 'ExportController@datos_excel');

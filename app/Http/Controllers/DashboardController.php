@@ -642,12 +642,68 @@
 
         public function equipo_indicadores(Request $request){
 
-            $equipo = app('db')->select("   SELECT NIT
-                                            FROM RH_EMPLEADOS
-                                            WHERE DEPENDE = '$request->nit'
-                                            AND STATUS = 'A'");
+            $empleado = Empleado::where('nit', $request->nit)->first();
+            $area = Area::find($empleado->codarea);
 
-            return response()->json($equipo);
+            $equipo = [];
+
+            $result = app('db')->select("    SELECT 
+                                                    T1.NIT,
+                                                    T1.NOMBRE, 
+                                                    T1.APELLIDO, 
+                                                    T2.*, 
+                                                    T1.STATUS, 
+                                                    T1.JEFE
+                                                FROM RH_EMPLEADOS T1
+                                                INNER JOIN RH_AREAS T2
+                                                ON T1.CODAREA = T2.CODAREA
+                                                WHERE T1.NIT = '$request->nit'");
+
+            $equipo [] = $result[0];
+
+            $result = app('db')->select("   SELECT 
+                                                T1.NIT,
+                                                T1.NOMBRE, 
+                                                T1.APELLIDO, 
+                                                T2.*, 
+                                                T1.STATUS, 
+                                                T1.JEFE
+                                            FROM RH_EMPLEADOS T1
+                                            INNER JOIN RH_AREAS T2
+                                            ON T1.CODAREA = T2.CODAREA
+                                            WHERE T1.DEPENDE = '$request->nit'
+                                            AND T1.STATUS = 'A'
+                                            AND T1.JEFE = 1");
+
+            /*
+                Por cada equipo buscar los integrantes
+            */
+
+            foreach ($result as $integrante) {
+                
+                $equipo [] = $integrante;
+
+            }
+
+            foreach ($equipo as $integrante) {
+                
+                $integrantes = app('db')->select("  SELECT 
+                                                        NIT
+                                                    FROM RH_EMPLEADOS
+                                                    WHERE CODAREA = '$integrante->codarea'
+                                                    AND STATUS = 'A'");
+
+                $integrante->integrantes = $integrantes;
+
+            }
+
+            $data = [
+                "empleado" => $empleado,
+                "area" => $area,
+                "equipo" => $equipo
+            ];
+
+            return response()->json($data);
 
         }
 

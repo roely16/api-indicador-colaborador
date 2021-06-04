@@ -42,25 +42,29 @@
                     $detalle_evaluacion->comentario = $criterio["comentario"];
 
                 }
-
+                
                 if (array_key_exists('data_calculo', $criterio)) {
 
-                    $data_calculo = $criterio["data_calculo"];
+                    if ($criterio["data_calculo"] != null) {
+                    
+                        $data_calculo = $criterio["data_calculo"];
 
-                    $detalle_evaluacion->operados = $criterio["data_calculo"]["operados"];
+                        $detalle_evaluacion->operados = $criterio["data_calculo"]["operados"];
 
-                    // Si existen SNC
-                    if (array_key_exists('snc', $data_calculo)) {
+                        // Si existen SNC
+                        if (array_key_exists('snc', $data_calculo)) {
 
-                        $detalle_evaluacion->snc = $data_calculo["snc"];
+                            $detalle_evaluacion->snc = $data_calculo["snc"];
 
-                    }
+                        }
 
-                    // Si existen correcciones
-                    if (array_key_exists('correcciones', $data_calculo)) {
-                        
-                        $detalle_evaluacion->correcciones = $data_calculo["correcciones"];
-                        
+                        // Si existen correcciones
+                        if (array_key_exists('correcciones', $data_calculo)) {
+                            
+                            $detalle_evaluacion->correcciones = $data_calculo["correcciones"];
+                            
+                        }
+
                     }
 
                 }
@@ -175,8 +179,6 @@
                 ];
 
             }else{
-
-                // Buscar las evaluaciones del personal que depende del usuario
 
                 // Buscar solo las evaluaciones de la sección del usuario
                 $evaluaciones = app('db')->select(" SELECT 

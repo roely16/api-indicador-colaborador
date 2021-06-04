@@ -6,6 +6,7 @@
 
     use App\Menu;
     use App\Permiso;
+    use App\Criterio;
 
     class PermisoController extends Controller{
 
@@ -209,12 +210,17 @@
             }
             
 
+            // Verificar el permiso de exportar por el ID del criterio
+            $criterio = Criterio::find($menu->id_criterio);
+
+
             $data = [
                 "escritura" => $permiso->escritura == 'S' ? true : false,
                 "secciones" => $permiso->secciones == 'S' ? true : false,
                 "conf" => $permiso->conf == 'S' ? true : false,
                 "admin" => $permiso->admin == 'S' ? true : false,
-                "habilitar" => $result
+                "habilitar" => $result,
+                "criterio" => $criterio
             ];
 
             return response()->json($data);
