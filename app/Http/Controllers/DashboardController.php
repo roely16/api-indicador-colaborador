@@ -185,6 +185,35 @@
 
             $colaborador = $data["colaborador"];
 
+            $arr_month = explode("-", $data["month"]);
+
+            $year = $arr_month[0];
+
+            /*
+                Buscar si existe una temporada para el año seleccionado
+            */
+
+            $result = app('db')->select("   SELECT 
+                                                TEMPORADAID
+                                            FROM TEMPORADAS
+                                            WHERE NOMBRE LIKE '%$year%'
+                                            ORDER BY TEMPORADAID DESC");
+
+            if (count($result) > 0) {
+                
+                $temporadaid = $result[0]->temporadaid;
+
+            }else{
+
+                $result = app('db')->select("   SELECT 
+                                                    TEMPORADAID
+                                                FROM TEMPORADAS
+                                                ORDER BY TEMPORADAID DESC");
+
+                $temporadaid = $result[0]->temporadaid;
+
+            }
+
             $result_colaborador = Empleado::where('nit', $colaborador->nit)->first();
 
             $colaborador->jefe = $result_colaborador->jefe;
@@ -193,13 +222,13 @@
             $result = app('db')->select("   SELECT *
                                             FROM RH_COLABORADORES_TEMPORADA
                                             WHERE NIT = '$colaborador->nit'
-                                            ORDER BY TEMPORADAID DESC");
+                                            AND TEMPORADAID = $temporadaid");
             
             if ($result) {
                 
                 $colaborador->porcentaje_colega = $result[0]->porcentaje_colega;
                 $colaborador->porcentaje_asesor = $result[0]->porcentaje_asesor;
-                $colaborador->temporadaid = $result[0]->temporadaid;
+                $colaborador->temporadaid = $temporadaid;
                 $colaborador->pendiente = false;
 
             }else{
@@ -242,17 +271,37 @@
                 
                 $evaluacion_colega = app('db')->select("    SELECT *
                                                             FROM RH_RESULTADOS_TEMPORADA
-                                                            WHERE TEMPORADAID = '$colaborador->temporadaid'
+                                                            WHERE TEMPORADAID = '$temporadaid'
                                                             AND NIT = '$colaborador->nit'
                                                             AND TIPOEV = 'subalterno'");
+
+                if(!$evaluacion_colega){
+
+                    $evaluacion_colega = app('db')->select("    SELECT *
+                                                                FROM RH_RESULTADOS_TEMPORADA
+                                                                WHERE TEMPORADAID = '$temporadaid'
+                                                                AND NIT = '$colaborador->nit'
+                                                                AND TIPOEV = 'colega'");
+
+                }
 
             }else{
 
                 $evaluacion_colega = app('db')->select("    SELECT *
                                                             FROM RH_RESULTADOS_TEMPORADA
-                                                            WHERE TEMPORADAID = '$colaborador->temporadaid'
+                                                            WHERE TEMPORADAID = '$temporadaid'
                                                             AND NIT = '$colaborador->nit'
                                                             AND TIPOEV = 'colega'");
+
+                if (!$evaluacion_colega) {
+                    
+                    $evaluacion_colega = app('db')->select("    SELECT *
+                                                                FROM RH_RESULTADOS_TEMPORADA
+                                                                WHERE TEMPORADAID = '$temporadaid'
+                                                                AND NIT = '$colaborador->nit'
+                                                                AND TIPOEV = 'subalterno'");
+
+                }
 
             }
 
@@ -643,24 +692,25 @@
         public function equipo_indicadores(Request $request){
 
             $empleado = Empleado::where('nit', $request->nit)->first();
-            $area = Area::find($empleado->codarea);
+            $area_empleado = Area::find($empleado->codarea);
 
             $equipo = [];
 
             $result = app('db')->select("    SELECT 
-                                                    T1.NIT,
-                                                    T1.NOMBRE, 
-                                                    T1.APELLIDO, 
-                                                    T2.*, 
-                                                    T1.STATUS, 
-                                                    T1.JEFE
-                                                FROM RH_EMPLEADOS T1
-                                                INNER JOIN RH_AREAS T2
-                                                ON T1.CODAREA = T2.CODAREA
-                                                WHERE T1.NIT = '$request->nit'");
+                                                T1.NIT,
+                                                T1.NOMBRE, 
+                                                T1.APELLIDO, 
+                                                T2.*, 
+                                                T1.STATUS, 
+                                                T1.JEFE
+                                            FROM RH_EMPLEADOS T1
+                                            INNER JOIN RH_AREAS T2
+                                            ON T1.CODAREA = T2.CODAREA
+                                            WHERE T1.NIT = '$request->nit'");
 
             $equipo [] = $result[0];
 
+            /*
             $result = app('db')->select("   SELECT 
                                                 T1.NIT,
                                                 T1.NOMBRE, 
@@ -672,35 +722,59 @@
                                             INNER JOIN RH_AREAS T2
                                             ON T1.CODAREA = T2.CODAREA
                                             WHERE T1.DEPENDE = '$request->nit'
-                                            AND T1.STATUS = 'A'
-                                            AND T1.JEFE = 1");
+                                            AND T1.STATUS = 'A'");
+            */
+
+            $areas = app('db')->select("   SELECT 
+                                                DISTINCT(T1.CODAREA), 
+                                                T2.DESCRIPCION
+                                            FROM RH_EMPLEADOS T1
+                                            INNER JOIN RH_AREAS T2
+                                            ON T1.CODAREA = T2.CODAREA
+                                            WHERE T1.DEPENDE = '$request->nit'");
 
             /*
                 Por cada equipo buscar los integrantes
             */
 
-            foreach ($result as $integrante) {
+            // foreach ($result as $integrante) {
                 
-                $equipo [] = $integrante;
+            //     $equipo [] = $integrante;
 
-            }
+            // }
 
-            foreach ($equipo as $integrante) {
+            foreach ($areas as $area) {
                 
+                /*
+                    Buscar al Asesor
+                */
+
+                $jefe = app('db')->select(" SELECT NOMBRE, APELLIDO
+                                            FROM RH_EMPLEADOS
+                                            WHERE CODAREA =  '$area->codarea'
+                                            AND STATUS = 'A'
+                                            AND JEFE = '1'");
+
+                if ($jefe) {
+                    
+                    $area->jefe = $jefe[0];
+
+                }
+
                 $integrantes = app('db')->select("  SELECT 
                                                         NIT
                                                     FROM RH_EMPLEADOS
-                                                    WHERE CODAREA = '$integrante->codarea'
+                                                    WHERE CODAREA = '$area->codarea'
                                                     AND STATUS = 'A'");
 
-                $integrante->integrantes = $integrantes;
+                $area->integrantes = $integrantes;
 
             }
 
             $data = [
                 "empleado" => $empleado,
-                "area" => $area,
-                "equipo" => $equipo
+                "area" => $area_empleado,
+                "equipo" => $areas
             ];
 
             return response()->json($data);

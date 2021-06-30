@@ -204,3 +204,29 @@ $router->post('/equipo_indicadores', 'DashboardController@equipo_indicadores');
 
 // Generar los datos para exportar a Excel 
 $router->post('/datos_excel', 'ExportController@datos_excel');
+
+// Obtener el seguimiento de la evaluación
+$router->post('/obtener_seguimiento', 'CompetenciaController@obtener_seguimiento');
+
+// Registrar actividad de seguimiento
+$router->post('/registrar_actividad_seguimiento', 'CompetenciaController@registrar_actividad');
+
+// Adjuntar archivos a la actividad
+$router->post('/subir_archivos_actividad', 'CompetenciaController@subir_archivos_actividad');
+
+// Detalle de la actividad de seguimiento
+$router->post('/detalle_actividad_seguimiento', 'CompetenciaController@detalle_actividad');
+
+// Editar actividad de seguimiento
+$router->post('/editar_actividad_seguimiento', 'CompetenciaController@editar_actividad');
+
+// Eliminar archivos
+$router->post('/eliminar_archivos_actividad', 'CompetenciaController@eliminar_archivos');
+
+// Eliminar actividad de seguimiento
+$router->post('/eliminar_actividad_seguimiento', 'CompetenciaController@eliminar_actividad');
+
+// Eliminar al colaborador de un perfil
+$router->post('/eliminar_colaborador_perfil', 'PerfilController@eliminar_colaborador_perfil');
+
+$router->post('/agregar_colaborador_perfil', 'PerfilController@agregar_colaborador_perfil');

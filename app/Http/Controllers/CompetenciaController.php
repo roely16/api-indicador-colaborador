@@ -18,6 +18,10 @@
 
     use App\PeriodoEvaCompetencia;
 
+    use App\SeguimientoCompetencias;
+    use App\ActividadSeguimiento;
+    use App\ArchivoActividad;
+
     class CompetenciaController extends Controller{
 
         public function obtener_perfil(Request $request){
@@ -66,6 +70,20 @@
 
             }
 
+            /*
+                Obtener el ID del periodo de evaluación en curso
+            */
+
+            $today = date('d/m/Y');
+
+            $result = app('db')->select("   SELECT 
+                                                ID
+                                            FROM RRHH_IND_EVA_COMP_PERIODO
+                                            WHERE TO_DATE('$today', 'DD/MM/YYYY') BETWEEN FECHA_INICIO
+                                            AND FECHA_FIN");
+
+            $id_periodo = $result ? $result[0]->id : null;
+
             $evaluacion = new EvaluacionCompetencia();
 
             $evaluacion->id_persona = $request->nit_colaborador;
@@ -74,6 +92,7 @@
             $evaluacion->competencias_blandas = $res_competencias[1];
             $evaluacion->periodo = $request->month;
             $evaluacion->calificacion = $request->total;
+            $evaluacion->id_periodo = $id_periodo;
             
             $evaluacion->save();
 
@@ -87,6 +106,42 @@
                     $detalle_evaluacion->resultado = $competencia["resultado"];
 
                     $detalle_evaluacion->save();
+
+                }
+
+            }
+
+            /* 
+
+                Si el total de la nota es menor o igual a 69
+
+            */
+
+            if ($request->total <= 69) {
+                
+                /*
+                    Registrar las competencias con puntaje menor o igual a 3
+                */
+
+                foreach ($request->tipos_competencias as $tipo) {
+                
+                    foreach ($tipo["competencias"] as $competencia) {
+
+
+                        if ($competencia["resultado"] <= 3) {
+                            
+                            $seguimiento = new SeguimientoCompetencias();
+
+                            $seguimiento->id_evaluacion = $evaluacion->id;
+                            $seguimiento->id_competencia = $competencia["id"];
+                            $seguimiento->resultado = $competencia["resultado"];
+                            $seguimiento->meta = 4;
+                            $seguimiento->tipo = $competencia["resultado"] <= 2 ? 'C' : 'P';
+                            $seguimiento->save();
+
+                        }
+
+                    }
 
                 }
 
@@ -243,7 +298,7 @@
                     [
                         "text" => "Colaborador",
                         "value" => "colaborador",
-                        "width" => "30%"
+                        "width" => "25%"
                     ],
                     [
                         "text" => "Sección",
@@ -272,7 +327,7 @@
                         "value" => "action",
                         "sortable" => false,
                         "align" => "right",
-                        "width" => "10%"
+                        "width" => "15%"
                     ]
                 ];
 
@@ -305,7 +360,7 @@
                 [
                     "text" => "Fecha de Registro",
                     "value" => "created_at",
-                    "width" => "25%"
+                    "width" => "20%"
                 ],
                 [
                     "text" => "Mes",
@@ -324,7 +379,7 @@
                     "value" => "action",
                     "sortable" => false,
                     "align" => "right",
-                    "width" => "10%"
+                    "width" => "15%"
                 ]
             ];
 
@@ -508,6 +563,272 @@
             }
 
             return response()->json($data);
+
+        }
+
+        public function obtener_seguimiento(Request $request){
+
+            $seguimiento = app('db')->select("  SELECT 
+                                                    T1.ID, 
+                                                    T2.NOMBRE AS COMPETENCIA, 
+                                                    T1.RESULTADO, 
+                                                    T1.META, 
+                                                    T1.TIPO
+                                                FROM RRHH_IND_EVA_COMP_SEGUIMIENTO T1
+                                                INNER JOIN RRHH_COMPETENCIA T2
+                                                ON T1.ID_COMPETENCIA = T2.ID
+                                                WHERE ID_EVALUACION = $request->id");
+
+            /*
+                Obtener las actividades registradas por cada seguimiento
+            */
+
+            foreach ($seguimiento as $item) {
+                
+                $actividades = app('db')->select("  SELECT 
+                                                        ID,
+                                                        ID_SEGUIMIENTO, 
+                                                        DESCRIPCION, 
+                                                        TO_CHAR(FECHA_INICIO, 'DD/MM/YYYY') AS FECHA_INICIO,
+                                                        TO_CHAR(FECHA_FIN, 'DD/MM/YYYY') AS FECHA_FIN,
+                                                        OBSERVACIONES
+                                                    FROM RRHH_IND_EVA_COMP_SEG_ACT
+                                                    WHERE ID_SEGUIMIENTO = $item->id");
+
+                $item->actividades = $actividades;
+
+            }
+
+            $headers = [
+                [
+                    "text" => "Competencia",
+                    "value" => "competencia"
+                ],
+                [
+                    "text" => "Resultado",
+                    "value" => "resultado"
+                ],
+                [
+                    "text" => "Meta",
+                    "value" => "meta"
+                ],
+                [
+                    "text" => "Tipo",
+                    "value" => "tipo"
+                ],
+                [
+                    "text" => "Acciones",
+                    "value" => "data-table-expand",
+                    "sortable" => false,
+                    "align" => "right"
+                ]
+            ];
+
+            $data = [
+                "items" => $seguimiento,
+                "headers" => $headers
+            ];
+
+            return response()->json($data);
+
+        }
+
+        public function registrar_actividad(Request $request){
+
+            $actividad = new ActividadSeguimiento();
+            
+            $actividad->id_seguimiento = $request->id_seguimiento;
+            $actividad->descripcion = $request->descripcion;
+            $actividad->fecha_inicio = $request->inicio;
+            $actividad->fecha_fin = $request->fin;
+            $actividad->observaciones = $request->observaciones;
+            $result = $actividad->save();
+
+            if (!$result) {
+                
+                $data = [
+                    "status" => 100
+                ];
+
+                return response()->json($data);
+            }
+
+            $data = [
+                "status" => 200,
+                "data" => $actividad
+            ];
+
+            return response()->json($data);
+
+        }
+
+        public function subir_archivos_actividad(Request $request){
+
+            $nombre = $request->file('file')->getClientOriginalName();
+            $identificador = uniqid() . '.' . $request->file('file')->extension();
+
+            if($request->file('file')->move('archivos', $identificador)){
+
+                /*
+                    Registrar en BD
+                */
+
+                $archivo = new ArchivoActividad();
+
+                $archivo->id_actividad = $request->id_actividad;
+                $archivo->nombre= $nombre;
+                $archivo->identificador = $identificador;
+                $result = $archivo->save();
+
+                if ($result) {
+                    
+                    $archivo->path = "/archivos/" . $archivo->identificador;
+                    $archivo->select = false;
+
+                }
+
+            }
+
+            return response()->json($archivo);
+
+        }
+
+        public function detalle_actividad(Request $request){
+
+            try {
+                
+                $actividad = app('db')->select("    SELECT 
+                                                        ID, 
+                                                        ID_SEGUIMIENTO,
+                                                        DESCRIPCION, 
+                                                        TO_CHAR(FECHA_INICIO, 'YYYY-MM-DD') AS INICIO,
+                                                        TO_CHAR(FECHA_FIN, 'YYYY-MM-DD') AS FIN,
+                                                        OBSERVACIONES
+                                                    FROM RRHH_IND_EVA_COMP_SEG_ACT
+                                                    WHERE ID = $request->id");
+
+                if ($actividad) {
+                    
+                    $actividad = $actividad[0];
+
+                    $actividad->files = [];
+
+                    /*
+                        Buscar los archivos
+                    */
+
+                    $actividad->archivos = app('db')->select("  SELECT *
+                                                                FROM RRHH_IND_EVA_COMP_ARCHIVO
+                                                                WHERE ID_ACTIVIDAD = $actividad->id
+                                                                ORDER BY ID ASC");
+
+                    if ($actividad->archivos) {
+                        
+                        foreach ($actividad->archivos as $archivo) {
+                            
+                            if(exif_imagetype("archivos/" . $archivo->identificador)) {
+                               
+                                $archivo->image = true;
+                                
+                            }else{
+
+                                $archivo->image = false;
+
+                            }
+
+                            $archivo->path = "archivos/" . $archivo->identificador;
+                            $archivo->select = false;
+
+                        }
+
+                    }
+                }
+
+            } catch (\Exception $e) {
+                
+                return response()->json($e->getMessage());
+
+            }
+            
+
+            return response()->json($actividad);
+
+        }
+
+        public function editar_actividad(Request $request){
+
+            $actividad = ActividadSeguimiento::find($request->id);
+
+            $actividad->descripcion = $request->descripcion;
+            $actividad->fecha_inicio = $request->inicio;
+            $actividad->fecha_fin = $request->fin;
+            $actividad->observaciones = $request->observaciones;
+            $result = $actividad->save();
+            
+            if (!$result) {
+                
+                $data = [
+                    "status" => 100
+                ];
+
+                return response()->json($data);
+            }
+
+            $data = [
+                "status" => 200,
+                "data" => $actividad
+            ];
+
+            return response()->json($data);
+
+        }
+
+        public function eliminar_archivos(Request $request){
+
+            $archivos = $request->archivos;
+
+            foreach ($archivos as $archivo) {
+                
+                $archivo_ = ArchivoActividad::find($archivo);
+                
+                unlink('archivos/'.$archivo_->identificador);
+
+                $archivo_->delete();
+
+            }
+
+            return response()->json($archivos);
+
+
+        }
+
+        public function eliminar_actividad(Request $request){
+
+            $actividad = ActividadSeguimiento::find($request->id);
+
+            /*
+                Validar si la actividad tiene archivos adjuntos
+            */
+
+            $archivos = ArchivoActividad::where('id_actividad', $actividad->id)->get();
+
+            if ($archivos) {
+                
+                foreach ($archivos as $archivo) {
+                    
+                    $archivo_ = ArchivoActividad::find($archivo->id);
+                
+                    unlink('archivos/'.$archivo_->identificador);
+
+                    $archivo_->delete();
+
+                }
+
+            }
+
+            $actividad->delete();
+
+            return response()->json($actividad);
 
         }
 

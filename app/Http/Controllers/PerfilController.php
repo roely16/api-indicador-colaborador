@@ -8,62 +8,91 @@
     use App\Competencia;
     use App\Empleado;
     use App\TipoCompetencia;
+    use App\Area;
 
     class PerfilController extends Controller{
 
         public function obtener_perfiles(Request $request){
 
-            $items = app('db')->select("    SELECT 
-                                                ID, 
-                                                NOMBRE, 
-                                                TO_CHAR(CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT, 
-                                                DESCRIPCION
-                                            FROM RRHH_PERFIL
-                                            WHERE DELETED_AT IS NULL");
+            $areas = Area::where('estatus', 'A')->get();
 
-            // Contar cuantos colaboradores tienen asignado el perfil
-
-            foreach ($items as $item) {
+            foreach ($areas as &$area) {
                 
-                $result = app('db')->select("    SELECT COUNT(*) AS TOTAL
-                                                FROM RH_EMPLEADOS
-                                                WHERE ID_PERFIL = $item->id");
+                $jefe = Empleado::where('codarea', $area->codarea)->where('jefe', '1')->where('status', 'A')->first();
 
-                $item->colaboradores = intval($result[0]->total);
+                $area->jefe = $jefe;
+
+                // Buscar los perfiles 
+
+                $perfiles = app('db')->select(" SELECT DISTINCT(ID_PERFIL) AS ID_PERFIL
+                                                FROM RH_EMPLEADO_PERFIL
+                                                WHERE NIT IN (
+                                                    
+                                                    SELECT NIT
+                                                    FROM RH_EMPLEADOS
+                                                    WHERE CODAREA = '$area->codarea'
+                                                    AND STATUS = 'A'
+                                                
+                                                )");
+
+                $_perfiles = [];
+
+                foreach ($perfiles as $perfil) {
+                    
+                    $perfil_ = Perfil::find($perfil->id_perfil);
+
+                    if($perfil_){
+
+                        // Buscar la cantidad de colaboradores con dicho perfil
+                        $num_colaboradores = app('db')->select("    SELECT COUNT(*) AS TOTAL
+                                                                    FROM RH_EMPLEADO_PERFIL
+                                                                    WHERE ID_PERFIL = $perfil_->id");
+
+                        $perfil_->colaboradores = $num_colaboradores ? $num_colaboradores[0]->total : 0;
+
+                        $_perfiles [] = $perfil_;
+
+                    }
+                    
+
+                }
+
+                $area->perfiles = $_perfiles;
 
             }
 
-            $headers = [
+            $perfiles_sin_asignar = app('db')->select(" SELECT *
+                                                        FROM RRHH_PERFIL
+                                                        WHERE ID NOT IN (
+                                                            SELECT ID_PERFIL
+                                                            FROM RH_EMPLEADO_PERFIL
+                                                        )
+                                                        AND DELETED_AT IS NULL");
+
+            foreach ($perfiles_sin_asignar as $perfil) {
+                
+                $perfil->colaboradores = 0;
+
+            }
+
+            $sin_asignar = [
                 [
-                    "text" => "Perfil",
-                    "value" => "nombre",
-                    "sortable" => false,
-                    "width" => "40%"
-                ],
-                [
-                    "text" => "Fecha de Creación",
-                    "value" => "created_at",
-                    "width" => "20%"
-                ],
-                [
-                    "text" => "No. de Colaborador",
-                    "value" => "colaboradores",
-                    "width" => "20%"
-                ],
-                [
-                    "text" => "Acción",
-                    "value" => "action",
-                    "align" => "end",
-                    "width" => "20%"
+                    "codarea" => 9999999,
+                    "descripcion" => "Pendientes de Asignar Colaborador",
+                    "perfiles" => $perfiles_sin_asignar
                 ]
             ];
 
-            $data = [
-                "items" => $items,
-                "headers" => $headers
+            //$areas [] = $sin_asignar;
+
+            //array_unshift($areas, $sin_asignar);
+
+            $response = [
+                "areas" => $areas,
+                "sin_asignar" => $sin_asignar
             ];
 
-            return response()->json($data);
+            return response()->json($response);
             
         }
 
@@ -97,7 +126,13 @@
             // Asignar el perfil
             foreach ($request->colaboradores as $colaborador) {
                 
-                $result = app('db')->table('RH_EMPLEADOS')->where('nit', $colaborador["nit"])->update(['id_perfil' => $perfil->id]);
+                $result = app('db')->table('RH_EMPLEADO_PERFIL')
+                            ->insert(
+                                [
+                                    'nit' => $colaborador["nit"],
+                                    'id_perfil' => $perfil->id
+                                ]
+                            );
 
             }
 
@@ -149,9 +184,15 @@
 
             $perfil->tipos_competencias = $arr_tipos_competencias;
 
-            $perfil->colaboradores = Empleado::where('id_perfil', $perfil->id)->get();
+            //$perfil->colaboradores = Empleado::where('id_perfil', $perfil->id)->get();
 
-            foreach ($perfil->colaboradores as &$colaborador) {
+            $perfil->colaboradores = app('db')->select("    SELECT T1.*, T2.ID_PERFIL
+                                                            FROM RH_EMPLEADOS T1
+                                                            INNER JOIN RH_EMPLEADO_PERFIL T2
+                                                            ON T1.NIT = T2.NIT
+                                                            WHERE T2.ID_PERFIL = $perfil->id");
+
+            foreach ($perfil->colaboradores as $colaborador) {
                 
                 $colaborador->delete = false;
 
@@ -261,6 +302,12 @@
 
             if ($result) {
                 
+                /*
+                    Eliminar las personas asignadas a dicho perfil 
+                */
+
+                $result = app('db')->table('RH_EMPLEADO_PERFIL')->where('id_perfil', $request->id)->delete();
+
                 $data = [
                     "status" => 200,
                     "title" => "Excelente",
@@ -279,6 +326,49 @@
             $colaborador = Empleado::where('nit', $request->nit)->first();
 
             return response()->json($colaborador);
+
+        }
+
+        public function eliminar_colaborador_perfil(Request $request){
+
+            $result = app('db')
+                        ->table('RH_EMPLEADO_PERFIL')
+                        ->where('nit', $request->nit)
+                        ->where('id_perfil', $request->id_perfil)
+                        ->delete();
+
+            if ($result) {
+                
+                $data = [
+                    "status" => 200
+                ];
+
+            }
+
+            return response()->json($data);
+
+        }
+
+        public function agregar_colaborador_perfil(Request $request){
+
+            $result = app('db')
+                        ->table('RH_EMPLEADO_PERFIL')
+                        ->insert([
+                            [
+                                'nit' => $request->nit,
+                                'id_perfil' => $request->id_perfil
+                            ]
+                        ]);
+
+            if ($result) {
+                
+                $response = [
+                    "status" => 200
+                ];
+
+            }
+
+            return response()->json($response);
 
         }
 
