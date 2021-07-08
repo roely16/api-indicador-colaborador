@@ -229,4 +229,20 @@ $router->post('/eliminar_actividad_seguimiento', 'CompetenciaController@eliminar
 // Eliminar al colaborador de un perfil
 $router->post('/eliminar_colaborador_perfil', 'PerfilController@eliminar_colaborador_perfil');
 
+// Agregar un colaborador a un perfil
 $router->post('/agregar_colaborador_perfil', 'PerfilController@agregar_colaborador_perfil');
+
+// Obtener el detalle del perfil de un colaborador para evaluación
+$router->post('/detalle_perfil_colaborador', 'CompetenciaController@detalle_perfil_colaborador');
+
+// Test mail
+$router->post('/test_mail', 'MailController@test');
+
+// Corregir evaluaciones de competencias
+$router->post('/corregir_evaluaciones_competencias', 'CompetenciaController@corregir_evaluaciones');
+
+// Corregir el seguimiento de las evaluaciones de competencias 
+$router->post('/corregir_seguimiento', 'CompetenciaController@corregir_seguimiento');
+
+// Verificar el cumplimiento de una actividad de seguimiento
+$router->post('/cumplimiento_actividad', 'CompetenciaController@cumplimiento_actividad');

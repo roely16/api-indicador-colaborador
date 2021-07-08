@@ -536,6 +536,63 @@
 
         }
 
+        public function observaciones_colaboradores($data){
+
+            $nit = $data["nit"];
+            $month = $data["month"];
+
+            $result = app('db')->select("   SELECT 
+                                                COUNT(*) AS TOTAL
+                                            FROM OBSERVACIONES_5S
+                                            WHERE NIT = '$nit'
+                                            AND FUENTE = 'COLABORADOR'
+                                            AND TO_CHAR(FECHA_OBS, 'YYYY-MM') = '$month'");
+
+            $calificacion = 100;
+
+            if ($result) {
+                
+                $total = $result[0]->total;
+
+                $restar = $total * 25;
+
+                if ($restar <= 100) {
+                    
+                    $calificacion = $calificacion - $restar;
+
+                }else{
+
+                    $calificacion = 0;
+
+                }
+
+                // Obtener las observaciones
+
+                $observaciones = app('db')->select("SELECT 
+                                                        CORRELATIVO AS DESCRIPCION
+                                                    FROM OBSERVACIONES_5S
+                                                    WHERE NIT = '$nit'
+                                                    AND FUENTE = 'COLABORADOR'
+                                                    AND TO_CHAR(FECHA_OBS, 'YYYY-MM') = '$month'");
+
+                foreach ($observaciones as &$observacion) {
+                    
+                    $observacion->descripcion = "Observación No. " . $observacion->descripcion;
+
+                }
+            }
+
+            $data = [
+                "calificacion" => $calificacion,
+                "editable" => false,
+                "info_calculo" => "Cálculo realizado en base a la información obtenida del módulo de 5S's.",
+                "motivos" => $observaciones
+            ];
+
+            return $data;
+
+        }
+
         public function correcciones($data){
 
             $codarea = $data["codarea"];

@@ -28,35 +28,44 @@
 
             $empleado = Empleado::where('nit', $request->nit)->first();
 
-            $perfil = Perfil::find($empleado->id_perfil);
-
-            $tipos_competencias = TipoCompetencia::all();
-
-            if ($perfil) {
-                
-                foreach ($tipos_competencias as &$tipo) {
-                
-                    $competencias = Competencia::where('id_tipo', $tipo->id)->where('id_perfil', $perfil->id)->where('deleted_at', null)->get();
-    
-                    foreach ($competencias as &$competencia) {
-                        
-                        $competencia->resultado = null;
-    
-                    }
-    
-                    $tipo->competencias = $competencias;
-    
-                }
-    
-            }
+            /* Obtener los perfiles del colaborador */
+            $perfil = app('db')->select("   SELECT T2.*
+                                            FROM RH_EMPLEADO_PERFIL T1 
+                                            INNER JOIN RRHH_PERFIL T2
+                                            ON T1.ID_PERFIL = T2.ID
+                                            WHERE T1.NIT = '$request->nit'");
             
             $data = [
                 "empleado" => $empleado,
-                "tipos_competencias" => $tipos_competencias,
                 "perfil" => $perfil
             ];
 
             return response()->json($data);
+
+        }
+
+        public function detalle_perfil_colaborador(Request $request){
+
+            $tipos_competencias = TipoCompetencia::all();
+            
+            foreach ($tipos_competencias as &$tipo) {
+            
+                $competencias = Competencia::where('id_tipo', $tipo->id)
+                                ->where('id_perfil', $request->id_perfil)
+                                ->where('deleted_at', null)
+                                ->get();
+
+                foreach ($competencias as &$competencia) {
+                    
+                    $competencia->resultado = null;
+
+                }
+
+                $tipo->competencias = $competencias;
+
+            }
+
+            return response()->json($tipos_competencias);
 
         }
 
@@ -93,6 +102,7 @@
             $evaluacion->periodo = $request->month;
             $evaluacion->calificacion = $request->total;
             $evaluacion->id_periodo = $id_periodo;
+            $evaluacion->id_perfil = $request->id_perfil;
             
             $evaluacion->save();
 
@@ -165,13 +175,20 @@
 
             $empleado = Empleado::where('nit', $request->nit_colaborador)->first();
 
-            $perfil = Perfil::find($empleado->id_perfil);
+            $perfil = Perfil::find($evaluacion->id_perfil);
+
+            /* Obtener todos los perfiles del colaborador */
+            $perfiles = app('db')->select(" SELECT T2.*
+                                            FROM RH_EMPLEADO_PERFIL T1
+                                            INNER JOIN RRHH_PERFIL T2
+                                            ON T1.ID_PERFIL = T2.ID
+                                            WHERE T1.NIT = '$request->nit_colaborador'");
 
             $tipos_competencias = TipoCompetencia::all();
 
             foreach ($tipos_competencias as &$tipo) {
 
-                $competencias = Competencia::where('id_tipo', $tipo->id)->where('id_perfil', $empleado->id_perfil)->get();
+                $competencias = Competencia::where('id_tipo', $tipo->id)->where('id_perfil', $evaluacion->id_perfil)->get();
 
                 foreach ($competencias as &$competencia) {
                     
@@ -192,7 +209,9 @@
             }
 
             $evaluacion->tipos_competencias = $tipos_competencias;
-            $evaluacion->perfil = $perfil->nombre;
+            $evaluacion->perfil = $perfil ? $perfil->id : null;
+            $evaluacion->nombre_perfil = $perfil ? $perfil->nombre : null;
+            $evaluacion->perfiles = $perfiles;
 
             return response()->json($evaluacion);
 
@@ -285,7 +304,8 @@
                                                         CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
                                                         T3.DESCRIPCION AS AREA,
-                                                        T2.CODAREA
+                                                        T2.CODAREA,
+                                                        T1.ID_PERFIL
                                                     FROM RRHH_IND_EVA_COMPETENCIA T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
@@ -294,6 +314,85 @@
                                                     WHERE T1.POSPONER IS NULL
                                                     ORDER BY T1.ID DESC");
 
+                foreach ($evaluaciones as &$evaluacion) {
+                                    
+                    $perfil = Perfil::find($evaluacion->id_perfil);
+
+                    $evaluacion->perfil = $perfil ? $perfil->nombre : null;
+
+                }
+
+                $headers = [
+                    [
+                        "text" => "Colaborador",
+                        "value" => "colaborador",
+                        "width" => "15%"
+                    ],
+                    [
+                        "text" => "Perfil",
+                        "value" => "perfil",
+                        "width" => "20%"
+                    ],
+                    [
+                        "text" => "Sección",
+                        "value" => "area",
+                        "width" => "15%"
+                    ],
+                    [
+                        "text" => "Fecha de Registro",
+                        "value" => "created_at",
+                        "width" => "15%"
+                    ],
+                    [
+                        "text" => "Mes",
+                        "value" => "periodo",
+                        "width" => "10%"
+                    ],
+                    [
+                        "text" => "Calificación",
+                        "value" => "calificacion",
+                        "width" => "5%",
+                        "align" => "center",
+                        "sortable" => false
+                    ],
+                    [
+                        "text" => "Acción",
+                        "value" => "action",
+                        "sortable" => false,
+                        "align" => "right",
+                        "width" => "10%"
+                    ]
+                ];
+
+
+            }else{
+
+                $evaluaciones = app('db')->select(" SELECT 
+                                                        T1.ID, 
+                                                        T1.ID_PERSONA,
+                                                        T1.PERIODO,
+                                                        T1.COMPETENCIAS_TECNICAS, 
+                                                        T1.COMPETENCIAS_BLANDAS,
+                                                        T1.CALIFICACION,
+                                                        CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
+                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
+                                                        T2.CODAREA,
+                                                        T1.ID_PERFIL
+                                                    FROM RRHH_IND_EVA_COMPETENCIA T1
+                                                    INNER JOIN RH_EMPLEADOS T2
+                                                    ON T1.ID_PERSONA = T2.NIT
+                                                    WHERE T2.CODAREA = $request->codarea
+                                                    AND T1.POSPONER IS NULL
+                                                    ORDER BY T1.ID DESC");
+
+                foreach ($evaluaciones as &$evaluacion) {
+                    
+                    $perfil = Perfil::find($evaluacion->id_perfil);
+
+                    $evaluacion->perfil = $perfil ? $perfil->nombre : null;
+
+                }
+
                 $headers = [
                     [
                         "text" => "Colaborador",
@@ -301,14 +400,14 @@
                         "width" => "25%"
                     ],
                     [
-                        "text" => "Sección",
-                        "value" => "area",
+                        "text" => "Perfil",
+                        "value" => "perfil",
                         "width" => "20%"
                     ],
                     [
                         "text" => "Fecha de Registro",
                         "value" => "created_at",
-                        "width" => "20%"
+                        "width" => "15%"
                     ],
                     [
                         "text" => "Mes",
@@ -332,61 +431,9 @@
                 ];
 
 
-            }else{
-
-                $evaluaciones = app('db')->select(" SELECT 
-                                                        T1.ID, 
-                                                        T1.ID_PERSONA,
-                                                        T1.PERIODO,
-                                                        T1.COMPETENCIAS_TECNICAS, 
-                                                        T1.COMPETENCIAS_BLANDAS,
-                                                        T1.CALIFICACION,
-                                                        CONCAT(T2.NOMBRE, CONCAT(' ', T2.APELLIDO)) AS COLABORADOR, 
-                                                        TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
-                                                        T2.CODAREA
-                                                    FROM RRHH_IND_EVA_COMPETENCIA T1
-                                                    INNER JOIN RH_EMPLEADOS T2
-                                                    ON T1.ID_PERSONA = T2.NIT
-                                                    WHERE T2.CODAREA = $request->codarea
-                                                    AND T1.POSPONER IS NULL
-                                                    ORDER BY T1.ID DESC");
-
-            $headers = [
-                [
-                    "text" => "Colaborador",
-                    "value" => "colaborador",
-                    "width" => "35%"
-                ],
-                [
-                    "text" => "Fecha de Registro",
-                    "value" => "created_at",
-                    "width" => "20%"
-                ],
-                [
-                    "text" => "Mes",
-                    "value" => "periodo",
-                    "width" => "10%"
-                ],
-                [
-                    "text" => "Calificación",
-                    "value" => "calificacion",
-                    "width" => "20%",
-                    "align" => "center",
-                    "sortable" => false
-                ],
-                [
-                    "text" => "Acción",
-                    "value" => "action",
-                    "sortable" => false,
-                    "align" => "right",
-                    "width" => "15%"
-                ]
-            ];
-
-
             }
 
-            foreach ($evaluaciones as $evaluacion) {
+            foreach ($evaluaciones as &$evaluacion) {
                 
                 $evaluacion->calificacion = round($evaluacion->calificacion, 2);
 
@@ -477,6 +524,8 @@
 
         public function registrar_periodo(Request $request){
 
+            return response()->json($request);
+
             $periodo = new PeriodoEvaCompetencia();
 
             $periodo->observacion = $request->observacion;
@@ -522,6 +571,14 @@
         public function editar_periodo(Request $request){
 
             $periodo = PeriodoEvaCompetencia::find($request->id);
+
+            $notificar = $request->notificar;
+
+            if ($notificar) {
+                
+                // Notificar a los asesores de la creación del periodo de evaluaciòn
+
+            }
 
             $periodo->observacion = $request->observacion;
             $periodo->fecha_inicio = $request->fecha_inicio;
@@ -591,7 +648,8 @@
                                                         DESCRIPCION, 
                                                         TO_CHAR(FECHA_INICIO, 'DD/MM/YYYY') AS FECHA_INICIO,
                                                         TO_CHAR(FECHA_FIN, 'DD/MM/YYYY') AS FECHA_FIN,
-                                                        OBSERVACIONES
+                                                        OBSERVACIONES,
+                                                        CUMPLIO
                                                     FROM RRHH_IND_EVA_COMP_SEG_ACT
                                                     WHERE ID_SEGUIMIENTO = $item->id");
 
@@ -684,6 +742,16 @@
                     
                     $archivo->path = "/archivos/" . $archivo->identificador;
                     $archivo->select = false;
+
+                    if(exif_imagetype("archivos/" . $archivo->identificador)) {
+                               
+                        $archivo->image = true;
+                        
+                    }else{
+
+                        $archivo->image = false;
+
+                    }
 
                 }
 
@@ -827,6 +895,100 @@
             }
 
             $actividad->delete();
+
+            return response()->json($actividad);
+
+        }
+
+        public function corregir_evaluaciones(Request $request){
+
+            $evaluaciones = EvaluacionCompetencia::where('id_perfil', null)->get();
+
+            foreach ($evaluaciones as $evaluacion) {
+                
+                $perfil = app('db')->select("   SELECT ID_PERFIL
+                                                FROM RH_EMPLEADO_PERFIL
+                                                WHERE NIT = '$evaluacion->id_persona'");
+
+                if ($perfil) {
+                    
+                    $perfil = $perfil[0];
+
+                    $evaluacion->id_perfil = $perfil->id_perfil;
+
+                }else{
+
+                    /* Buscar a nivel de Empleado */
+
+                    $empleado = Empleado::where('nit', $evaluacion->id_persona)->first();
+
+                    if ($empleado) {
+                        
+                        $evaluacion->id_perfil = $empleado->id_perfil;
+
+                    }
+
+                }
+
+                if ($evaluacion->id_perfil) {
+                    
+                    /* Actualizar */
+
+                    $result = app('db')
+                                ->table('RRHH_IND_EVA_COMPETENCIA')
+                                ->where('id', $evaluacion->id)
+                                ->update([
+                                    'id_perfil' => $evaluacion->id_perfil
+                                ]);
+
+                }
+
+            }
+
+            return response()->json($evaluaciones);
+
+        }
+
+        public function corregir_seguimiento(Request $request){
+            
+            $seguimiento = [];
+
+            $evaluaciones = EvaluacionCompetencia::where('calificacion', '<=', 69)->get();
+
+            foreach ($evaluaciones as $evaluacion) {
+                
+                $detalle = DetalleEvaluacionCompetencia::where('id_evaluacion', $evaluacion->id)->where('resultado', '<=', 3)->get();
+
+                foreach ($detalle as $item) {
+                    
+                    $registro = [];
+
+                    $registro["id_evaluacion"] = $item->id_evaluacion;
+                    $registro["id_competencia"] = $item->id_competencia;
+                    $registro["resultado"] = $item->resultado;
+                    $registro["meta"] = 4;
+                    $registro["tipo"] = $item->resultado == 3 ? 'P' : 'C';
+
+                    $seguimiento [] = $registro;
+
+                }
+
+                $evaluacion->detalle = $detalle;
+
+            }
+
+            $result = app('db')->table('RRHH_IND_EVA_COMP_SEGUIMIENTO')->insert($seguimiento);
+
+            return response()->json($seguimiento);
+
+        }
+
+        public function cumplimiento_actividad(Request $request){
+
+            $actividad = ActividadSeguimiento::find($request->id);
+
+            $actividad->cumplio = $request->cumplio;
+            $actividad->save();
 
             return response()->json($actividad);
 
