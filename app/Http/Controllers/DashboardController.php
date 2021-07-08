@@ -234,7 +234,6 @@
             }else{
 
                 $colaborador->pendiente = true;
-
             }
 
             // Por cada colaborador buscar la evaluación de superior
@@ -333,19 +332,32 @@
 
             // Asignar un color
 
-            if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
+            $colaborador->calificacion = $colaborador->calificacion > 0 ? $colaborador->calificacion : null;
 
-                $colaborador->color = 'red';
+            if (!$colaborador->pendiente) {
+                
+                if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
 
-            }elseif( $colaborador->calificacion >= 60 && $colaborador->calificacion < 80){
-
-                $colaborador->color = 'orange';
+                    $colaborador->color = 'red';
+    
+                }elseif( $colaborador->calificacion >= 60 && $colaborador->calificacion < 80){
+    
+                    $colaborador->color = 'orange';
+    
+                }else{
+    
+                    $colaborador->color = 'green';
+    
+                }
 
             }else{
 
-                $colaborador->color = 'green';
+                $colaborador->color = 'blue';
+                $colaborador->calificacion = 0;
 
             }
+
+            
 
             return $colaborador;
 
@@ -489,7 +501,7 @@
 
             }else{
 
-                $colaborador->calificacion = null;
+                $colaborador->calificacion = 0;
                 $colaborador->pendiente = true;
 
             }
