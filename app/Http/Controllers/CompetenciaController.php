@@ -22,6 +22,10 @@
     use App\ActividadSeguimiento;
     use App\ArchivoActividad;
 
+    use App\Area;
+
+    use App\Jobs\NotificationJob;
+
     class CompetenciaController extends Controller{
 
         public function obtener_perfil(Request $request){
@@ -464,8 +468,6 @@
 
         public function obtener_periodos(Request $request){
 
-            //$periodos = PeriodoEvaCompetencia::all();
-
             $periodos = app('db')->select(" SELECT
                                                 ID,
                                                 TO_CHAR(FECHA_INICIO, 'DD/MM/YYYY') AS FECHA_INICIO,
@@ -476,14 +478,101 @@
                                             FROM RRHH_IND_EVA_COMP_PERIODO
                                             WHERE DELETED_AT IS NULL
                                             ORDER BY ID DESC");
-
-            $i = 1;
+            
 
             foreach ($periodos as &$periodo) {
-            
-                $periodo->index = $i;
                 
-                $i++;
+                $periodo->filtro = 'PE';
+
+                /*Posponer */
+                $posponer = app('db')->select(" SELECT COUNT(DISTINCT (ID_PERSONA)) AS TOTAL
+                                                FROM RRHH_IND_EVA_COMPETENCIA
+                                                WHERE POSPONER = 'S'
+                                                AND ID_PERIODO = $periodo->id
+                                                AND ID_PERSONA IN (
+                                                    SELECT NIT
+                                                    FROM RH_EMPLEADOS
+                                                    WHERE STATUS = 'A'
+                                                )");
+
+                if ($posponer) {
+                    
+                    $posponer = $posponer[0]->total;
+
+                }else{
+
+                    $posponer = 0;
+
+                }
+
+                $pendientes = 0;
+
+                $areas = Area::where('estatus', 'A')->get();
+                $areas_pendientes = [];
+                $areas_posponer = [];
+
+                foreach ($areas as &$area) {
+
+                    $area->id_periodo = $periodo->id;
+
+                    $empleados = Empleado::where('codarea', $area->codarea)->where('status', 'A')->get();
+
+                    $e_pendientes = [];
+                    $emp_posponer_pendientes = [];
+
+                    foreach ($empleados as $empleado) {
+                        
+                        $evaluacion = EvaluacionCompetencia::where('id_persona', $empleado->nit)->where('id_periodo', $periodo->id)->first();
+                        $empleado->id_periodo = $periodo->id;
+
+                        if (!$evaluacion) {
+                            
+                            $e_pendientes [] = $empleado;
+                            $pendientes++;
+
+                        }
+
+                        /* Buscar si tiene una evaluación pospuesta */
+                        $evaluacion_post = EvaluacionCompetencia
+                                            ::where('id_persona', $empleado->nit)
+                                            ->where('id_periodo', $periodo->id)
+                                            ->where('posponer', 'S')
+                                            ->first();
+                        
+                        if($evaluacion_post){
+
+                            $emp_posponer_pendientes [] = $empleado;
+
+                        }
+
+                        //$empleado->id_periodo = $periodo->id;
+                    }
+
+                    $bk_area1 = $area;
+                    $bk_area2 = $area;
+
+                    if (count($e_pendientes) > 0) {
+                        
+                        $bk_area1->empleados = $e_pendientes;
+                        $areas_pendientes [] = $bk_area1;
+
+                    }
+
+                    if (count($emp_posponer_pendientes) > 0) {
+                        
+                        $bk_area2->empleados = $emp_posponer_pendientes;
+                        $areas_posponer [] = $bk_area2;
+
+                    }
+
+                    
+                }
+                
+                $periodo->areas = $areas_pendientes;
+                $periodo->areas_posponer = $areas_posponer;
+                $periodo->pendientes = $pendientes;
+                $periodo->posponer = $posponer;
+
 
             }
 
@@ -509,13 +598,17 @@
                     "sortable" => false,
                     "align" => "right",
                     "width" => "15%"
+                ],
+                [
+                    "text" => "",
+                    "value" => "data-table-expand"
                 ]
             ];
 
 
             $data = [
                 "items" => $periodos,
-                "headers" => $headers
+                "headers" => $headers,
             ];
 
             return response()->json($data);
@@ -523,8 +616,6 @@
         }
 
         public function registrar_periodo(Request $request){
-
-            return response()->json($request);
 
             $periodo = new PeriodoEvaCompetencia();
 
@@ -535,7 +626,33 @@
 
             if ($result) {
 
-                $data = [
+                /* 
+                    Registrar las notificaciones de la habilitación del periodo
+                */
+
+                $rows = app('db')->select(" SELECT 
+                                                NIT
+                                            FROM RH_EMPLEADOS
+                                            WHERE JEFE = 1
+                                            AND STATUS = 'A'");
+
+                $destinos = [];
+
+                foreach ($rows as $row) {
+                    
+                    $destinos [] = $row->nit;
+
+                }
+
+                $data = (object) [
+                    "titulo" => "Periodo de Evaluación de Competencias", 
+                    "detalle" => "Se ha habilitado un nuevo periodo de evaluaciones de competencias con fechas del " . $request->fecha_inicio . ' al ' . $request->fecha_fin . '.',
+                    "destinos" => $destinos
+                ];
+
+                \Queue::push(new NotificationJob($data));
+
+                $response = [
                     "status" => 200,
                     "title" => "Excelente",
                     "message" => "El periodo a sido registrado exitosamente",
@@ -544,7 +661,7 @@
 
             }
 
-            return response()->json($data);
+            return response()->json($response);
 
         }
 
@@ -991,6 +1108,12 @@
             $actividad->save();
 
             return response()->json($actividad);
+
+        }
+
+        public function filtro_periodo(Request $request){
+
+
 
         }
 

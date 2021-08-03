@@ -246,3 +246,18 @@ $router->post('/corregir_seguimiento', 'CompetenciaController@corregir_seguimien
 
 // Verificar el cumplimiento de una actividad de seguimiento
 $router->post('/cumplimiento_actividad', 'CompetenciaController@cumplimiento_actividad');
+
+// Obtener las notificaciones
+$router->post('/obtener_notificaciones', 'NotificacionController@obtener_notificaciones');
+
+// Eliminar la notificación
+$router->post('/eliminar_notificacion', 'NotificacionController@eliminar_notificacion');
+
+// Filtro de un periodo de evaluaciones de competencias
+$router->post('/filtro_periodo', 'CompetenciaController@filtro_periodo');
+
+// Test Jobs
+$router->post('/test_job', 'JobController@test_job');
+
+// Probar Job para evaluaciones
+$router->post('/evaluacion_job', 'JobController@evaluacion_job');

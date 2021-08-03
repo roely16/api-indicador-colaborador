@@ -13,171 +13,219 @@
 
         public function dashboard_area(Request $request){
 
+            /* 
+                PERSONAS CON NOTAS POR DEFECTO
+            */
+            $exclusiones = [
+                [
+                    "nombre" => "Ing. Maynor Cárcamo",
+                    "nit" => "838152-6",
+                    "criterios" => [1, 5, 8]
+                ]
+            ];
+
             // Mes actual
             $month = $request->month;
+            $areas = [];
 
-            $empleados = Empleado::where('codarea', $request->codarea)->where('status', 'A')->get();
-
-            // Obtener los criterios para el dashboard
-
-            foreach ($empleados as &$empleado) {
+            foreach ($request->codarea as $codarea) {
                 
-                // Obtener la imagen de cada colaborador
-                $imagen = app('db')->select("   SELECT *
-                                                FROM RH_RUTA_PDF
-                                                WHERE NIT = '$empleado->nit'
-                                                AND IDCAT = '11'");
+                $area = Area::find($codarea);
 
-                if ($imagen) {
+                $empleados = Empleado::where('codarea', $codarea)->where('status', 'A')->get();
 
-                    $empleado->imagen64 =  'http://172.23.25.31/GestionServicios/' . $imagen[0]->ruta;
+                // Obtener los criterios para el dashboard
 
-                }else{
-
-                    $empleado->imagen = null;
-                    $empleado->imagen64 = null;
-
-                }
-
-                $criterios = Criterio::all();
-
-                $empleado->nombre_completo = $empleado->nombre . ' ' . $empleado->apellido;
-                $empleado->criterios = $criterios;
-
-                // Por cada uno de los criterios 
-                foreach ($empleado->criterios as &$criterio) {
+                foreach ($empleados as &$empleado) {
                     
-                    if (!$criterio->funcion_calculo) {
-                        
-                        // Buscar la última evaluación según el criterio
-                        $evaluacion = app('db')->select("   SELECT *
-                                                            FROM RRHH_IND_EVALUACION
-                                                            WHERE ID_CRITERIO = $criterio->id
-                                                            AND ID_PERSONA = '$empleado->nit'
-                                                            AND MES = '$month'");
+                    // Obtener la imagen de cada colaborador
+                    $imagen = app('db')->select("   SELECT *
+                                                    FROM RH_RUTA_PDF
+                                                    WHERE NIT = '$empleado->nit'
+                                                    AND IDCAT = '11'");
 
-                        if ($evaluacion) {
-                            
-                            // Calcular la calificación
+                    if ($imagen) {
 
-                            $evaluacion = $evaluacion[0];
-
-                            $detalle = DetalleEvaluacion::where('id_evaluacion', $evaluacion->id)->get();
-
-                            $total = 0;
-                            $str_motivo = null;
-
-                            foreach ($detalle as $item) {
-                                
-                                $total += $item->calificacion;
-
-                                if ($item->motivo) {
-                                    
-                                    $str_motivo = $str_motivo . $item->motivo;
-
-                                }
-
-                            }
-
-                            $criterio->motivo = $str_motivo;
-
-                            $criterio->calificacion = $evaluacion->calificacion;
-
-                            $criterio->calificacion = $criterio->calificacion > 100 ? 100 : $criterio->calificacion;
-
-                            if ($criterio->calificacion >= 0 && $criterio->calificacion < 60) {
-                            
-                                $criterio->color = 'red';
-
-                            }elseif( $criterio->calificacion >= 60 && $criterio->calificacion < 80){
-
-                                $criterio->color = 'orange';
-
-                            }else{
-
-                                $criterio->color = 'green';
-
-                            }
-
-                            $empleado->total_mensual += round(($evaluacion->valor_criterio * $criterio->calificacion) / 100, 2);
-                            
-                        }else{
-
-                            /*
-                                Si no tiene evaluación validar si es necesario asignarle una nota por defecto    
-                            */
-
-                            if ($criterio->calificacion_default) {
-                                
-                                $criterio->pendiente = false;
-                                $criterio->calificacion = 100;
-
-                                if ($criterio->calificacion >= 0 && $criterio->calificacion < 60) {
-                            
-                                    $criterio->color = 'red';
-    
-                                }elseif( $criterio->calificacion >= 60 && $criterio->calificacion < 80){
-    
-                                    $criterio->color = 'orange';
-    
-                                }else{
-    
-                                    $criterio->color = 'green';
-    
-                                }
-
-                                /*
-                                    Validar si se trata de un proceso ISO o no
-                                */
-
-                                $area = Area::find($empleado->codarea);
-
-                                if ($area->iso == '1') {
-                                    
-                                    $valor_criterio = $criterio->valor;
-
-                                }else{
-
-                                    $valor_criterio = $criterio->valor_no_iso;
-
-                                }
-
-                                $empleado->total_mensual += round(($valor_criterio * $criterio->calificacion) / 100, 2);
-
-                            }else{
-
-                                $criterio->pendiente = true;
-
-                            }
-                        }
-
-                        $empleado->total_anual = 50;
+                        $empleado->imagen64 =  'http://172.23.25.31/GestionServicios/' . $imagen[0]->ruta;
 
                     }else{
 
-                        $data = [
-                            "colaborador" => $empleado,
-                            "criterio" => $criterio,
-                            "month" => $month
-                        ];
-
-                        $result = $this->{$criterio->funcion_calculo}($data);
-
-                        $criterio->color = $result["color"];
-                        $criterio->calificacion = $result["calificacion"];
-                        $criterio->pendiente = $result["pendiente"];
-
-                        $empleado->total_mensual += round(($criterio->valor * $criterio->calificacion) / 100, 2);
+                        $empleado->imagen = null;
+                        $empleado->imagen64 = null;
 
                     }
-                    
+
+                    $criterios = Criterio::all();
+
+                    $empleado->nombre_completo = $empleado->nombre . ' ' . $empleado->apellido;
+                    $empleado->criterios = $criterios;
+
+                    // Por cada uno de los criterios 
+                    foreach ($empleado->criterios as &$criterio) {
+
+                        foreach ($exclusiones as $exclusion) {
+                            
+                            foreach ($exclusion["criterios"] as $criterio_ex) {
+                                
+                                if ($empleado->nit == $exclusion["nit"] && $criterio->id == $criterio_ex) {
+                                    
+                                    $criterio->calificacion = 100;
+                                    $criterio->exclucion = true;
+                                    $criterio->color = 'green';
+                                    
+                                    $empleado->total_mensual += round(($criterio->valor * $criterio->calificacion) / 100, 2);
+
+                                }else{
+
+                                    $empleado->exclucion = false;
+
+                                }
+
+                            }
+
+                        }
+                        
+                        if (!$criterio->exclucion) {
+
+                            if (!$criterio->funcion_calculo) {
+                                
+                                // Buscar la última evaluación según el criterio
+                                $evaluacion = app('db')->select("   SELECT *
+                                                                    FROM RRHH_IND_EVALUACION
+                                                                    WHERE ID_CRITERIO = $criterio->id
+                                                                    AND ID_PERSONA = '$empleado->nit'
+                                                                    AND MES = '$month'");
+
+                                if ($evaluacion) {
+                                    
+                                    // Calcular la calificación
+
+                                    $evaluacion = $evaluacion[0];
+
+                                    $detalle = DetalleEvaluacion::where('id_evaluacion', $evaluacion->id)->get();
+
+                                    $total = 0;
+                                    $str_motivo = null;
+
+                                    foreach ($detalle as $item) {
+                                        
+                                        $total += $item->calificacion;
+
+                                        if ($item->motivo) {
+                                            
+                                            $str_motivo = $str_motivo . $item->motivo;
+
+                                        }
+
+                                    }
+
+                                    $criterio->motivo = $str_motivo;
+
+                                    $criterio->calificacion = $evaluacion->calificacion;
+
+                                    $criterio->calificacion = $criterio->calificacion > 100 ? 100 : $criterio->calificacion;
+
+                                    if ($criterio->calificacion >= 0 && $criterio->calificacion < 60) {
+                                    
+                                        $criterio->color = 'red';
+
+                                    }elseif( $criterio->calificacion >= 60 && $criterio->calificacion < 80){
+
+                                        $criterio->color = 'orange';
+
+                                    }else{
+
+                                        $criterio->color = 'green';
+
+                                    }
+
+                                    $empleado->total_mensual += round(($evaluacion->valor_criterio * $criterio->calificacion) / 100, 2);
+                                    
+                                }else{
+
+                                    /*
+                                        Si no tiene evaluación validar si es necesario asignarle una nota por defecto    
+                                    */
+
+                                    if ($criterio->calificacion_default) {
+                                        
+                                        $criterio->pendiente = false;
+                                        $criterio->calificacion = 100;
+
+                                        if ($criterio->calificacion >= 0 && $criterio->calificacion < 60) {
+                                    
+                                            $criterio->color = 'red';
+            
+                                        }elseif( $criterio->calificacion >= 60 && $criterio->calificacion < 80){
+            
+                                            $criterio->color = 'orange';
+            
+                                        }else{
+            
+                                            $criterio->color = 'green';
+            
+                                        }
+
+                                        /*
+                                            Validar si se trata de un proceso ISO o no
+                                        */
+
+                                        $area = Area::find($empleado->codarea);
+
+                                        if ($area->iso == '1') {
+                                            
+                                            $valor_criterio = $criterio->valor;
+
+                                        }else{
+
+                                            $valor_criterio = $criterio->valor_no_iso;
+
+                                        }
+
+                                        $empleado->total_mensual += round(($valor_criterio * $criterio->calificacion) / 100, 2);
+
+                                    }else{
+
+                                        $criterio->pendiente = true;
+
+                                    }
+                                }
+
+                                $empleado->total_anual = 50;
+
+                            }else{
+
+                                $data = [
+                                    "colaborador" => $empleado,
+                                    "criterio" => $criterio,
+                                    "month" => $month
+                                ];
+
+                                $result = $this->{$criterio->funcion_calculo}($data);
+
+                                $criterio->color = $result["color"];
+                                $criterio->calificacion = $result["calificacion"];
+                                $criterio->pendiente = $result["pendiente"];
+
+                                $empleado->total_mensual += round(($criterio->valor * $criterio->calificacion) / 100, 2);
+
+                            }
+
+                        }
+                        
+                    }
+
+                    $empleado->stars = ($empleado->total_mensual * 5) / 100;
+
                 }
 
-                $empleado->stars = ($empleado->total_mensual * 5) / 100;
+                $area->empleados = $empleados;
+
+                $areas [] = $area;
 
             }
 
-            return response()->json($empleados);
+            return response()->json($areas);
 
         }
         

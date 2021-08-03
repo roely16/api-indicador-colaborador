@@ -62,8 +62,6 @@
 
             if ($colaborador->jefe == '1') {
                 
-                //$items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_asesor', 'S')->get();
-
                 $items = app('db')->select("    SELECT *
                                                 FROM RRHH_IND_CRITERIO_ITEM T1
                                                 INNER JOIN RRHH_IND_CRITERIO_ITEM_AREA T2
@@ -75,8 +73,6 @@
                                                 ORDER BY T1.ID ASC");
 
             }else{
-
-                //$items = CriterioItem::where('id_criterio', $criterio->id)->where('aplica_prestador', 'S')->get();
 
                 $items = app('db')->select("    SELECT *
                                                 FROM RRHH_IND_CRITERIO_ITEM T1
@@ -664,7 +660,9 @@
 
                 if (array_key_exists('id_evaluacion', $data)) {
 
-                    $porcentaje_resta = round(100 * ($datos->correcciones / $datos->operados), 2);
+                    //$porcentaje_resta = round(100 * ($datos->correcciones / $datos->operados), 2);
+
+                    $porcentaje_resta = 0;
 
                 }
 
@@ -753,7 +751,9 @@
 
                 if (array_key_exists('id_evaluacion', $data)) {
 
-                    $porcentaje_resta = round(100 * ($datos->snc / $datos->operados), 2);
+                    //$porcentaje_resta = round(100 * ($datos->snc / $datos->operados), 2);
+
+                    $porcentaje_resta = 0;
 
                 }
 
@@ -923,7 +923,7 @@
                                             FROM ISO_ATENCION_USUARIO
                                             WHERE USUARIO_TRABAJO LIKE '%$usuario%'
                                             AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
-                                            AND RESULTADO = 'RECHAZADO'
+                                            AND RESULTADO = 'INCOMPLETO'
                                             AND TIPO IS NULL");
 
             $data= [
@@ -1128,12 +1128,12 @@
                                             FROM ISO_ATENCION_USUARIO
                                             WHERE USUARIO_TRABAJO LIKE '%$usuario%'
                                             AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'
-                                            AND RESULTADO = 'RECHAZADO'
+                                            AND RESULTADO = 'INCOMPLETO'
                                             AND TIPO = 'SNC'");
 
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "snc" => $correcciones ? $correcciones[0]->correcciones : 0
+                "snc" => $correcciones ? $correcciones[0]->correcciones : 0,
             ];
 
             return $data;
@@ -1179,6 +1179,80 @@
             ];
 
             return $data;
+
+        }
+
+        public function encuestas_cliente_interno($data){
+
+            $nit = $data["nit"];
+            $month = $data["month"];
+
+            $empleado = Empleado::where('nit', $nit)->first();
+
+            $pendientes = 0;
+            $motivos = [];
+
+            /*
+                Validar si existen encuestas de informatica pendientes
+            */
+
+            $informatica = app('db')->select("  SELECT 
+                                                    COUNT(*) AS TOTAL
+                                                FROM MSA_MEDICION_ENCABEZADO
+                                                WHERE CONTACTO = '$empleado->emailmuni'
+                                                AND ID_MEDICION = 6
+                                                AND MEDICION_REALIZADA IS NULL
+                                                AND TO_CHAR(FECHA_CARGA, 'YYYY-MM') = '$month'");
+
+
+            if ($informatica) {
+                                
+                if (intval($informatica[0]->total)) {
+                    
+                    $pendientes += intval($informatica[0]->total);
+
+                    $motivos [] = [
+                        "descripcion" => 'Encuestas pendientes de informática: ' . $informatica[0]->total
+                    ];
+
+                }         
+
+            }
+
+            /*
+                Validar si existen encuestas de vales pendientes
+            */
+
+            $vales = app('db')->select("    SELECT 
+                                                COUNT(*) AS TOTAL
+                                            FROM MSA_MEDICION_ENCABEZADO
+                                            WHERE ID_MEDICION = 7
+                                            AND MEDICION_REALIZADA IS NULL
+                                            AND CLIENTE = '$empleado->usuario'
+                                            AND TO_CHAR(FECHA_CARGA, 'YYYY-MM') = '$month'");
+
+            if ($vales) {
+                                            
+                if (intval($vales[0]->total) > 0) {
+                    
+                    $pendientes += intval($vales[0]->total);
+
+                    $motivos [] = [
+                        "descripcion" => 'Encuestas pendientes de vales: ' . $vales[0]->total
+                    ];
+
+                }         
+
+            }
+
+            $response = [
+                "calificacion" => 100 - (5 * $pendientes),
+                "editable" => false,
+                "info_calculo" => "Cálculo realizado automáticamente.",
+                "motivos" => $motivos,
+            ];
+
+            return $response;
 
         }
 

@@ -14,54 +14,60 @@
 
         public function registrar_evaluacion(Request $request){
 
+            /*
+                TODO 
+                - Validar que registrar SNC, Comentarios, Correcciones, Motivos
+            */
+
+            $req_criterio = (object) $request->criterio;
+
             $evaluacion = new Evaluacion();
-            $evaluacion->id_criterio = $request->criterio["id"];
+            $evaluacion->id_criterio = $req_criterio->id;
             $evaluacion->id_persona = $request->id_persona;
-            $evaluacion->valor_criterio = $request->criterio["valor"];
+            $evaluacion->valor_criterio = $req_criterio->valor;
             $evaluacion->mes = $request->month;
 
-            
             $evaluacion->calificacion = $request->calificacion;
 
-
             $evaluacion->save();
-
-            //$criterio = Criterio::where('modulo', $request->url)->first();
 
             $criterios = $request->items;
 
             foreach ($criterios as &$criterio) {
                 
+                $criterio = (object) $criterio;
+
                 $detalle_evaluacion = new DetalleEvaluacion();
                 $detalle_evaluacion->id_evaluacion = $evaluacion->id;
-                $detalle_evaluacion->id_item = $criterio["id"];
-                $detalle_evaluacion->valor = $criterio["valor"];
+                $detalle_evaluacion->id_item = $criterio->id;
+                $detalle_evaluacion->valor = $criterio->valor;
 
+                
                 if (array_key_exists('comentario', $criterio)) {
 
-                    $detalle_evaluacion->comentario = $criterio["comentario"];
+                    $detalle_evaluacion->comentario = $criterio->comentario;
 
                 }
                 
                 if (array_key_exists('data_calculo', $criterio)) {
 
-                    if ($criterio["data_calculo"] != null) {
+                    if ($criterio->data_calculo != null) {
                     
-                        $data_calculo = $criterio["data_calculo"];
+                        $data_calculo = (object) $criterio->data_calculo;
 
-                        $detalle_evaluacion->operados = $criterio["data_calculo"]["operados"];
+                        $detalle_evaluacion->operados = $data_calculo->operados;
 
                         // Si existen SNC
                         if (array_key_exists('snc', $data_calculo)) {
 
-                            $detalle_evaluacion->snc = $data_calculo["snc"];
+                            $detalle_evaluacion->snc = $data_calculo->snc;
 
                         }
 
                         // Si existen correcciones
                         if (array_key_exists('correcciones', $data_calculo)) {
                             
-                            $detalle_evaluacion->correcciones = $data_calculo["correcciones"];
+                            $detalle_evaluacion->correcciones = $data_calculo->correcciones;
                             
                         }
 
@@ -72,13 +78,15 @@
                 if (array_key_exists('motivos', $criterio)) {
 
                     // Validar que existan motivos
-                    if (count($criterio["motivos"]) > 0) {
+                    if (count($criterio->motivos) > 0) {
                         
                         $str_motivos = null;
 
-                        foreach ($criterio["motivos"] as $motivo) {
+                        foreach ($criterio->motivos as $motivo) {
                             
-                            $str_motivos = $str_motivos . $motivo["descripcion"] . " \r\n";
+                            $motivo = (object) $motivo;
+
+                            $str_motivos = $str_motivos . $motivo->descripcion . " \r\n";
 
                         }
 
@@ -88,13 +96,13 @@
 
                 }
                 
-                if ($request->criterio["division"] == 'S') {
+                if ($req_criterio->division == 'S') {
                     
-                    $detalle_evaluacion->calificacion = ($criterio["valor"] * $criterio["calificacion"]) / 100;
+                    $detalle_evaluacion->calificacion = ($criterio->valor * $criterio->calificacion) / 100;
 
                 }else {
 
-                    $detalle_evaluacion->calificacion = $criterio["valor"] * $criterio["calificacion"];
+                    $detalle_evaluacion->calificacion = $criterio->valor * $criterio->calificacion;
 
                 }
                 
@@ -301,70 +309,83 @@
 
         public function editar_evaluacion(Request $request){
 
+            $req_criterio = (object) $request->criterio;
+
             $evaluacion = Evaluacion::find($request->id_evaluacion);
             $evaluacion->mes = $request->month;
             $evaluacion->calificacion = $request->calificacion;
             $evaluacion->save();
-
 
             // Eliminar los registros anteriores de la evaluación
             foreach ($request->items as $item) {
                 
                 //$detalle_evaluacion = DetalleEvaluacion::where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->first();
 
+                $item = (object) $item;
+
                 $calificacion = 0;
 
-                if ($request->criterio["division"] == 'S') {
+                if ($req_criterio->division == 'S') {
 
-                    $calificacion = ($item["valor"] * $item["calificacion"]) / 100;
-
-                }else{
-
-                    $calificacion = $item["valor"] * $item["calificacion"];
-
-                }
-
-                if (array_key_exists('comentario', $item)) {
-
-                    $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion, 'comentario' => $item["comentario"], 'valor' => $item["valor"]]);
+                    $calificacion = ($item->valor * $item->calificacion) / 100;
 
                 }else{
 
-                    $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->update(['calificacion' => $calificacion, 'valor' => $item["valor"]]);
+                    $calificacion = $item->valor * $item->calificacion;
 
                 }
 
-                if ($item["data_calculo"] != null) {
+                if ($item->comentario) {
 
-                    $data_calculo = $item["data_calculo"];
+                    $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item->id)->update(['calificacion' => $calificacion, 'comentario' => $item->comentario, 'valor' => $item->valor]);
 
-                    // Si existen SNC
-                    if (array_key_exists('snc', $data_calculo)) {
+                }else{
 
-                        $result = app('db')
-                                    ->table('rrhh_ind_evaluacion_detalle')
-                                    ->where('id_evaluacion', $request->id_evaluacion)
-                                    ->where('id_item', $item["id"])
-                                    ->update([
-                                        'operados' => $data_calculo["operados"],
-                                        'snc' => $data_calculo["snc"]
-                                    ]);
+                    $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item->id)->update(['calificacion' => $calificacion, 'valor' => $item->valor]);
 
-                    }
+                }
 
-                    // Si existen correcciones
-                    if (array_key_exists('correcciones', $data_calculo)) {
+                if ($item->data_calculo != null) {
+
+                    $data_calculo = (object) $item->data_calculo;
+
+                    //return response()->json($data_calculo);
+
+                    try {
+
+                        // Si existen SNC
+                        if ($data_calculo->snc) {
+
+                            $result = app('db')
+                                        ->table('rrhh_ind_evaluacion_detalle')
+                                        ->where('id_evaluacion', $request->id_evaluacion)
+                                        ->where('id_item', $item->id)
+                                        ->update([
+                                            'operados' => $data_calculo->operados,
+                                            'snc' => $data_calculo->snc
+                                        ]);
+
+                        }
+
+                        // Si existen correcciones
                         
-                        $result = app('db')
-                                    ->table('rrhh_ind_evaluacion_detalle')
-                                    ->where('id_evaluacion', $request->id_evaluacion)
-                                    ->where('id_item', $item["id"])
-                                    ->update([
-                                        'operados' => $data_calculo["operados"],
-                                        'correcciones' => $data_calculo["correcciones"]
-                                    ]);
+                        if ($data_calculo->correcciones) {
                         
+                            $result = app('db')
+                                        ->table('rrhh_ind_evaluacion_detalle')
+                                        ->where('id_evaluacion', $request->id_evaluacion)
+                                        ->where('id_item', $item->id)
+                                        ->update([
+                                            'operados' => $data_calculo->operados,
+                                            'correcciones' => $data_calculo->correcciones
+                                        ]);
+                            
+                        }
+
+                    } catch (\Throwable $th) {
+                        //throw $th;
                     }
+                    
 
                 }
 

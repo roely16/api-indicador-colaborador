@@ -2,8 +2,7 @@
 
 namespace App\Jobs;
 
-class ExampleJob extends Job
-{
+class MailJob extends Job{
 
     protected $data;
 
@@ -12,6 +11,7 @@ class ExampleJob extends Job
      *
      * @return void
      */
+
     public function __construct($data){
 
         $this->data = $data;
@@ -26,12 +26,7 @@ class ExampleJob extends Job
 
     public function handle(){
 
-        $nit = $this->data->nit;
-
-        $result = app('db')->select("   SELECT *
-                                        FROM RH_EMPLEADOS
-                                        WHERE NIT = '$nit'");
-
         
+
     }
 }
