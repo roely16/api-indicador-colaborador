@@ -261,3 +261,8 @@ $router->post('/test_job', 'JobController@test_job');
 
 // Probar Job para evaluaciones
 $router->post('/evaluacion_job', 'JobController@evaluacion_job');
+
+// Export Dashboard
+$router->post('/export_dashboard', 'DashboardController@export_dashboard');
+
+$router->post('/export_dashboard_view', 'DashboardController@export_dashboard_view');

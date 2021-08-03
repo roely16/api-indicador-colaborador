@@ -100,6 +100,7 @@ $app->middleware([
 
 $app->register(Yajra\Oci8\Oci8ServiceProvider::class);
 $app->register(Illuminate\Mail\MailServiceProvider::class);
+$app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
 
 // $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
@@ -124,6 +125,8 @@ $app->alias('mail.manager', Illuminate\Contracts\Mail\Factory::class);
 $app->alias('mailer', Illuminate\Mail\Mailer::class);
 $app->alias('mailer', Illuminate\Contracts\Mail\Mailer::class);
 $app->alias('mailer', Illuminate\Contracts\Mail\MailQueue::class);
+
+$app->alias('Excel', Maatwebsite\Excel\Facades\Excel::class);
 
 $app->router->group([
     'namespace' => 'App\Http\Controllers',

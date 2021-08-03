@@ -9,6 +9,9 @@
     use App\Criterio;
     use App\DetalleEvaluacion;
 
+    use App\Exports\DashboardExport;
+    use Maatwebsite\Excel\Facades\Excel;
+
     class DashboardController extends Controller{
 
         public function dashboard_area(Request $request){
@@ -846,6 +849,30 @@
             ];
 
             return response()->json($data);
+
+        }
+
+        public function export_dashboard(Request $request){
+            
+            return Excel::download(new DashboardExport($request), 'dashboard.xlsx');
+
+        }
+
+        public function export_dashboard_view(Request $request){
+
+            $result = $this->dashboard_area($request);
+
+            $areas = $result->getData();
+            
+            $data = [
+                "areas" => $areas
+            ];
+            
+            return response(view('export_dashboard', $data));
+
+            //return response()->json($data);
+
+            //return Excel::download(new DashboardExport(1), 'dashboard.xlsx');
 
         }
 
