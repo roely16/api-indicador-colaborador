@@ -544,7 +544,15 @@
 
             if ($result) {
                 
-                $colaborador->calificacion = $result[0]->calificacion;
+                $total = 0;
+
+                foreach ($result as $evaluacion) {
+                    
+                    $total += $evaluacion->calificacion;
+
+                }
+
+                $colaborador->calificacion = $total / count($result);
                 $colaborador->pendiente = false;
 
             }else{
