@@ -30,8 +30,19 @@
             // Mes actual
             $month = $request->month;
             $areas = [];
+            $codareas = [];
 
-            foreach ($request->codarea as $codarea) {
+            if (is_array($request->codarea)) {
+                
+                $codareas = $request->codarea;
+
+            }else{
+
+                $codareas[] = $request->codarea;
+
+            }
+
+            foreach ($codareas as $codarea) {
                 
                 $area = Area::find($codarea);
 
@@ -90,6 +101,22 @@
                         
                         if (!$criterio->exclucion) {
 
+                            /*
+                                Validar si se trata de un proceso ISO o no
+                            */
+
+                            $area = Area::find($empleado->codarea);
+
+                            if ($area->iso == '1') {
+                                
+                                $valor_criterio = $criterio->valor;
+
+                            }else{
+
+                                $valor_criterio = $criterio->valor_no_iso;
+
+                            }
+
                             if (!$criterio->funcion_calculo) {
                                 
                                 // Buscar la última evaluación según el criterio
@@ -142,7 +169,8 @@
 
                                     }
 
-                                    $empleado->total_mensual += round(($evaluacion->valor_criterio * $criterio->calificacion) / 100, 2);
+                                    $criterio->nota_individual = round(($valor_criterio * $criterio->calificacion) / 100, 2);
+                                    $empleado->total_mensual += round(($valor_criterio * $criterio->calificacion) / 100, 2);
                                     
                                 }else{
 
@@ -169,22 +197,7 @@
             
                                         }
 
-                                        /*
-                                            Validar si se trata de un proceso ISO o no
-                                        */
-
-                                        $area = Area::find($empleado->codarea);
-
-                                        if ($area->iso == '1') {
-                                            
-                                            $valor_criterio = $criterio->valor;
-
-                                        }else{
-
-                                            $valor_criterio = $criterio->valor_no_iso;
-
-                                        }
-
+                                        $criterio->nota_individual = round(($valor_criterio * $criterio->calificacion) / 100, 2);
                                         $empleado->total_mensual += round(($valor_criterio * $criterio->calificacion) / 100, 2);
 
                                     }else{
@@ -194,7 +207,7 @@
                                     }
                                 }
 
-                                $empleado->total_anual = 50;
+                                //$empleado->total_anual = 50;
 
                             }else{
 
@@ -210,7 +223,8 @@
                                 $criterio->calificacion = $result["calificacion"];
                                 $criterio->pendiente = $result["pendiente"];
 
-                                $empleado->total_mensual += round(($criterio->valor * $criterio->calificacion) / 100, 2);
+                                $criterio->nota_individual = round(($valor_criterio * $criterio->calificacion) / 100, 2);
+                                $empleado->total_mensual += round(($valor_criterio * $criterio->calificacion) / 100, 2);
 
                             }
 
@@ -606,6 +620,18 @@
             // Por cada uno de los criterios 
             foreach ($empleado->criterios as &$criterio) {
                 
+                $area = Area::find($empleado->codarea);
+
+                if ($area->iso == '1') {
+                    
+                    $valor_criterio = $criterio->valor;
+
+                }else{
+
+                    $valor_criterio = $criterio->valor_no_iso;
+
+                }
+
                 $imagen = app('db')->select("   SELECT *
                                                 FROM RH_RUTA_PDF
                                                 WHERE NIT = '$empleado->nit'
@@ -674,7 +700,7 @@
 
                         }
 
-                        $empleado->total_mensual += round(($evaluacion->valor_criterio * $criterio->calificacion) / 100, 2);
+                        $empleado->total_mensual += round(($valor_criterio * $criterio->calificacion) / 100, 2);
 
                     }else{
 
@@ -748,7 +774,7 @@
                         - Tomar el valor del criterio si es ISO o no
                     */
 
-                    $empleado->total_mensual += round(($criterio->valor * $criterio->calificacion) / 100, 2);
+                    $empleado->total_mensual += round(($valor_criterio * $criterio->calificacion) / 100, 2);
 
                 }
 

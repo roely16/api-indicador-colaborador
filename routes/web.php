@@ -266,3 +266,19 @@ $router->post('/evaluacion_job', 'JobController@evaluacion_job');
 $router->post('/export_dashboard', 'DashboardController@export_dashboard');
 
 $router->post('/export_dashboard_view', 'DashboardController@export_dashboard_view');
+
+// SGS
+// Obtener actividades
+$router->post('/sgs_obtener_actividades', 'SGSActividadController@obtener_actividades');
+
+// Registrar actividad
+$router->post('/sgs_registrar_actividad', 'SGSActividadController@registrar_actividad');
+
+// Editar actividad
+$router->post('/sgs_editar_actividad', 'SGSActividadController@editar_actividad');
+
+// Eliminar actividad
+$router->post('/sgs_eliminar_actividad', 'SGSActividadController@eliminar_actividad');
+
+// Detalle de la actividad
+$router->post('/sgs_detalle_actividad', 'SGSActividadController@detalle_actividad');

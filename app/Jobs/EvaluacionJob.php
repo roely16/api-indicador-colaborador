@@ -17,6 +17,10 @@ class EvaluacionJob extends Job{
             "id" => 3
         ],
         [
+            "nombre" => "oficina_verde",
+            "id" => 4
+        ],
+        [
             "nombre" => "iso",
             "id" => 2
         ]

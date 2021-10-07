@@ -131,6 +131,8 @@
 
             if ($permiso->secciones == 'S') {
                 
+                $procesos = implode(",", $request->areas);
+
                 $evaluaciones = app('db')->select(" SELECT 
                                                         T1.ID, 
                                                         T1.ID_PERSONA,
@@ -147,6 +149,8 @@
                                                     INNER JOIN RH_AREAS T3
                                                     ON T2.CODAREA = T3.CODAREA
                                                     WHERE T1.ID_CRITERIO = $criterio->id
+                                                    AND T1.MES = '$request->date'
+                                                    AND T3.CODAREA IN ($procesos)
                                                     ORDER BY T1.ID DESC");
 
                 $headers = [
@@ -203,7 +207,7 @@
                                                     ON T1.ID_PERSONA = T2.NIT
                                                     WHERE T1.ID_CRITERIO = $criterio->id
                                                     AND T2.CODAREA = $request->codarea
-                                                    AND T2.DEPENDE = '$request->nit'
+                                                    AND T1.MES = '$request->date'
                                                     ORDER BY T1.ID DESC");
 
                 $headers = [
