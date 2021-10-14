@@ -34,7 +34,7 @@
                     "width" => "30%"
                 ],
                 [
-                    "text" => "Ultima actualización",
+                    "text" => "Última actualización",
                     "value" => "updated_at",
                     "sortable" => false,
                     "width" => "30%"

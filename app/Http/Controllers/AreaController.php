@@ -129,9 +129,13 @@
 
             foreach ($areas as &$area) {
                 
+                $area->check = false;
+
                 $empleados = Empleado::where('codarea', $area->codarea)->where('status', 'A')->get();
 
                 foreach ($empleados as &$empleado) {
+                    
+                    $empleado->check = false;
                     
                     // Obtener la imagen de cada colaborador
                     $imagen = app('db')->select("   SELECT *
@@ -142,20 +146,6 @@
                     if ($imagen) {
                                     
                         $empleado->imagen64 =  'http://172.23.25.31/GestionServicios/' . $imagen[0]->ruta;
-
-                        //$empleado->imagen64 = $_SERVER['DOCUMENT_ROOT'] . "/GestionServicios/" . $empleado->imagen;
-
-                        // $type = pathinfo($empleado->imagen, PATHINFO_EXTENSION);
-                        
-                        // try {
-                            
-                        //     $data = file_get_contents($empleado->imagen);
-                        //     $empleado->imagen64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-
-                        // } catch (\Throwable $th) {
-                        //     //throw $th;
-                        // }
-                        
 
                     }else{
 

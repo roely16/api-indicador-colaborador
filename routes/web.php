@@ -282,3 +282,45 @@ $router->post('/sgs_eliminar_actividad', 'SGSActividadController@eliminar_activi
 
 // Detalle de la actividad
 $router->post('/sgs_detalle_actividad', 'SGSActividadController@detalle_actividad');
+
+// Obtener las evaluaciones
+$router->post('/sgs_obtener_evaluaciones', 'EvaluacionSGSController@obtener_evaluaciones');
+
+// Registrar evaluación
+$router->post('/sgs_registrar_evaluacion', 'EvaluacionSGSController@registrar_evaluacion');
+
+// Eliminar evaluación
+$router->post('/sgs_eliminar_evaluacion', 'EvaluacionSGSController@eliminar_evaluacion');
+
+// Detalles de la evaluación
+$router->post('/sgs_detalle_evaluacion', 'EvaluacionSGSController@detalle_evaluacion');
+
+// Editar evaluación
+$router->post('/sgs_editar_evaluacion', 'EvaluacionSGSController@editar_evaluacion');
+
+// Obtener las actividades disponibles para asignar
+$router->post('/sgs_actividades_disponibles', 'EvaDetalleSGSController@actividades_disponibles');
+
+// Registrar actividades a una evaluación
+$router->post('/sgs_agregar_actividad_eva', 'EvaDetalleSGSController@agregar_actividades');
+
+// Obtener las actividades asignadas a una evaluación
+$router->post('/sgs_actividades_evaluacion', 'EvaDetalleSGSController@actividades_evaluacion');
+
+// Agregar responsables a una actividad de SGS
+$router->post('/sgs_asignar_responsables', 'EvaDetalleSGSController@asignar_responsables');
+
+// Obtener los responsables de una actividad
+$router->post('/sgs_responsables_actividad', 'EvaDetalleSGSController@obtener_responsables_actividad');
+
+// Obtener colaboradores disponibles
+$router->post('/sgs_colaboradores_disponibles', 'EvaDetalleSGSController@colaboradores_disponibles');
+
+// Actualizar el cumplimiento de una actividad
+$router->post('/sgs_actualizar_cumplimiento', 'EvaDetalleSGSController@actualizar_cumplimiento');
+
+// Actualizar el porcentaje de una actividad 
+$router->post('/sgs_actualizar_porcentaje', 'EvaDetalleSGSController@actualizar_porcentaje');
+
+// Eliminar los responsables de una actividad
+$router->post('/sgs_eliminar_responsables', 'EvaDetalleSGSController@eliminar_responsables');
