@@ -23,7 +23,25 @@
 
         public function evaluacion_job(Request $request){
 
-            \Queue::push(new EvaluacionJob());
+            if ($request->nit) {
+                
+                $data = (object) [
+                    "date" => $request->date,
+                    "nit" => $request->nit,
+                    "codarea" => null
+                ];
+
+            }elseif ($request->codarea) {
+                
+                $data = (object) [
+                    "date" => $request->date,
+                    "codarea" => $request->codarea,
+                    "nit" => null
+                ];
+
+            }
+
+            \Queue::push(new EvaluacionJob($data));
 
             return response()->json($request);
 

@@ -549,7 +549,7 @@
         public function competencia($data){
 
             // Mes actual
-            $month = date('m/Y');
+            $month = $data["month"];
 
             $colaborador = $data["colaborador"];
 
@@ -603,6 +603,98 @@
 
             return $colaborador;
 
+
+        }
+
+        public function sgs($data){
+
+            $month = $data["month"];
+            $criterio = $data["criterio"];
+            $colaborador = $data["colaborador"];
+
+            $evaluacion = app('db')->select("   SELECT *
+                                                FROM RRHH_IND_SGS_EVALUACION
+                                                WHERE MES = '$month'
+                                                AND DELETED_AT IS NULL");
+
+            // Buscar si en la evaluación el colaborador es tomado en cuenta
+
+            if(!$evaluacion){
+
+                if($criterio->calificacion_default){
+
+                    $colaborador->calificacion = 100;
+                    $colaborador->pendiente = false;
+                    $colaborador->color = 'green';
+
+                    return $colaborador;
+                    
+                }
+
+                $colaborador->calificacion = 0;
+                $colaborador->pendiente = true;
+                $colaborador->color = 'blue';
+
+            }else{
+
+                $evaluacion = $evaluacion[0];
+
+                $query = "SELECT PORCENTAJE
+                FROM RRHH_IND_SGS_EVA_ACT T1
+                INNER JOIN RRHH_IND_SGS_EVA_ACT_RESP T2
+                ON T1.ID = T2.ID_ACTIVIDAD_EVALUACION
+                WHERE ID_EVALUACION = $evaluacion->id
+                AND RESPONSABLE = '$colaborador->nit'";
+
+                $actividades = app('db')->select("  SELECT PORCENTAJE, REALIZADA
+                                                    FROM RRHH_IND_SGS_EVA_ACT T1
+                                                    INNER JOIN RRHH_IND_SGS_EVA_ACT_RESP T2
+                                                    ON T1.ID = T2.ID_ACTIVIDAD_EVALUACION
+                                                    WHERE ID_EVALUACION = $evaluacion->id
+                                                    AND RESPONSABLE = '$colaborador->nit'");
+
+                if($actividades){
+
+                    $calificacion = 0;
+
+                    $colaborador->pendiente = false;
+
+                    foreach ($actividades as $actividad) {
+
+                        if ($actividad->realizada == 'S') {
+                            
+                            $calificacion += $actividad->porcentaje;
+
+                        }
+                    }
+
+                    $colaborador->calificacion = $calificacion;
+
+                    if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
+
+                        $colaborador->color = 'red';
+    
+                    }elseif( $colaborador->calificacion >= 60 && $colaborador->calificacion < 80){
+    
+                        $colaborador->color = 'orange';
+    
+                    }else{
+    
+                        $colaborador->color = 'green';
+    
+                    }
+                    
+                }else{
+
+                    $colaborador->calificacion = 100;
+                    $colaborador->pendiente = false;
+                    $colaborador->color = 'green';
+
+                }
+
+            }
+
+            return $colaborador;
 
         }
 

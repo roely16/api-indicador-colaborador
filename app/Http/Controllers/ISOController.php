@@ -205,7 +205,7 @@
                                             FROM SQ_QUEJA
                                             WHERE DIRIGIDO_A = '$usuario'
                                             AND CLASIFICACION = 'QUEJA'
-                                            AND TO_CHAR(FECHA_QUEJA, 'YYYY-MM') = '$month'");
+                                            AND TO_CHAR(FECHA_ACUSE_RECIBO, 'YYYY-MM') = '$month'");
 
             $total = $quejas[0]->total;
 
@@ -239,7 +239,7 @@
                                                 FROM SQ_QUEJA
                                                 WHERE DIRIGIDO_A = '$usuario'
                                                 AND CLASIFICACION = 'QUEJA'
-                                                AND TO_CHAR(FECHA_QUEJA, 'YYYY-MM') = '$month'");
+                                                AND TO_CHAR(FECHA_ACUSE_RECIBO, 'YYYY-MM') = '$month'");
 
                 foreach ($motivos as &$motivo) {
                     

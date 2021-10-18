@@ -9,7 +9,7 @@ use App\Evaluacion;
 
 class EvaluacionJob extends Job{
 
-    protected $data;
+    protected $data_user;
 
     protected $areas = [
         [
@@ -32,7 +32,9 @@ class EvaluacionJob extends Job{
      * @return void
      */
 
-    public function __construct(){
+    public function __construct($data){
+
+        $this->data_user = $data;
 
     }
 
@@ -44,22 +46,40 @@ class EvaluacionJob extends Job{
 
     public function handle(){
 
-        $month = date('Y-m');
-
+        $month = $this->data_user->date;
+       
         /*
             Por cada área validar cada uno de los integrantes del equipo
         */
         
         foreach ($this->areas as $area) {
             
-            $empleados = app('db')->select("    SELECT 
-                                                    NOMBRE, 
-                                                    APELLIDO, 
-                                                    NIT
-                                                FROM RH_EMPLEADOS
-                                                WHERE CODAREA = 8
-                                                AND STATUS = 'A'
-                                                AND NIT = '6450819-6'");
+            if ($this->data_user->nit) {
+                
+                $nit = $this->data_user->nit;
+
+                $empleados = app('db')->select("    SELECT 
+                                                        NOMBRE, 
+                                                        APELLIDO, 
+                                                        NIT
+                                                    FROM RH_EMPLEADOS
+                                                    WHERE NIT = '$nit'
+                                                    AND STATUS = 'A'");
+
+            }elseif ($this->data_user->codarea) {
+                
+                $codarea = $this->data_user->codarea;
+
+                $str_codareas = implode(",", $codarea);
+
+                $empleados = app('db')->select("    SELECT 
+                                                        NOMBRE, 
+                                                        APELLIDO, 
+                                                        NIT
+                                                    FROM RH_EMPLEADOS
+                                                    WHERE CODAREA = $str_codareas
+                                                    AND STATUS = 'A'");
+            }
 
             foreach ($empleados as $empleado) {
                 
@@ -220,7 +240,7 @@ class EvaluacionJob extends Job{
 
         }
 
-        dd($empleados);
+        //dd($empleados);
 
     }
 
