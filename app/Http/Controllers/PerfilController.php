@@ -209,6 +209,8 @@
             $perfil->nombre = $request->nombre;
             $perfil->descripcion = $request->descripcion;
 
+            $perfil->save();
+            
             // Actualizar o registrar las nuevas competencias
             foreach ($request->tipos_competencias as $tipo) {
                 
