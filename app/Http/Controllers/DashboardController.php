@@ -11,6 +11,7 @@
 
     use App\Exports\DashboardExport;
     use Maatwebsite\Excel\Facades\Excel;
+    use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
     class DashboardController extends Controller{
 
@@ -26,6 +27,8 @@
                     "criterios" => [1, 5, 8]
                 ]
             ];
+
+            $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
             // Mes actual
             $month = $request->month;
@@ -52,6 +55,10 @@
 
                 foreach ($empleados as &$empleado) {
                     
+                    $month_array = explode("-", $month);
+
+                    $empleado->mes = $meses[intval($month_array[1] - 1)];
+
                     // Obtener la imagen de cada colaborador
                     $imagen = app('db')->select("   SELECT *
                                                     FROM RH_RUTA_PDF
@@ -214,7 +221,7 @@
                                 $data = [
                                     "colaborador" => $empleado,
                                     "criterio" => $criterio,
-                                    "month" => $month
+                                    "month" => $month,
                                 ];
 
                                 $result = $this->{$criterio->funcion_calculo}($data);
@@ -989,7 +996,9 @@
 
         public function export_dashboard(Request $request){
             
-            return Excel::download(new DashboardExport($request), 'dashboard.xlsx');
+            $excel_export = new DashboardExport($request);
+
+            return Excel::download($excel_export, 'dashboard.xlsx');
 
         }
 
@@ -1004,10 +1013,6 @@
             ];
             
             return response(view('export_dashboard', $data));
-
-            //return response()->json($data);
-
-            //return Excel::download(new DashboardExport(1), 'dashboard.xlsx');
 
         }
 

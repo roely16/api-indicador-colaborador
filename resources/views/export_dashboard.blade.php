@@ -1,11 +1,10 @@
-@foreach($areas as $area)
-    <h1>
-        {{ $area->descripcion }}
-    </h1>
     <table>
+    @foreach($areas as $area)
         <thead>
             <tr>
                 <th>Colaborador</th>
+                <th>Área</th>
+                <th>Mes</th>
                 <th>Productividad</th>
                 <th>ISO 9001</th>
                 <th>Metodología 5'S</th>
@@ -22,6 +21,12 @@
                     <td>
                         {{ $empleado->nombre }} {{ $empleado->apellido }}
                     </td>
+                    <td>
+                        {{ $area->descripcion }}
+                    </td>
+                    <td>
+                        {{ $empleado->mes }}
+                    </td>
                     @foreach($empleado->criterios as $criterio)
 
                         <?php if(property_exists($criterio, "calificacion")) : ?>
@@ -37,5 +42,14 @@
                 </tr>
             @endforeach
         </tbody>
+        @endforeach
     </table>
-@endforeach
+
+    <style>
+
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+    </style>
