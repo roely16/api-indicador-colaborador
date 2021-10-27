@@ -585,15 +585,16 @@
 
             if ($result) {
                 
-                $total = 0;
+                // $total = 0;
 
-                foreach ($result as $evaluacion) {
+                // foreach ($result as $evaluacion) {
                     
-                    $total += $evaluacion->calificacion;
+                //     $total += $evaluacion->calificacion;
 
-                }
+                // }
 
-                $colaborador->calificacion = $total / count($result);
+                // $colaborador->calificacion = $total / count($result);
+                $colaborador->calificacion = $result[0]->calificacion;
                 $colaborador->pendiente = false;
 
             }else{
