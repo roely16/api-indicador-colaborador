@@ -77,7 +77,7 @@ class EvaluacionJob extends Job{
                                                         APELLIDO, 
                                                         NIT
                                                     FROM RH_EMPLEADOS
-                                                    WHERE CODAREA = $str_codareas
+                                                    WHERE CODAREA IN ($str_codareas)
                                                     AND STATUS = 'A'");
             }
 
