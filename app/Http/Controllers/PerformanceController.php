@@ -118,6 +118,7 @@
                 "headers" => $headers,
                 "items" => $colaboradores
             ];
+            
             return response()->json($data);
 
         }

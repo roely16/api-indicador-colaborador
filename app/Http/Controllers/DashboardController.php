@@ -264,20 +264,37 @@
                                             WHERE NOMBRE LIKE '%$year%'
                                             ORDER BY TEMPORADAID DESC");
 
-            if (count($result) > 0) {
+            // Validar que existan registros para la temporada
+            if ($result) {
+                
+                $tempid = $result[0]->temporadaid;
+
+                $total_evaluaciones = app('db')->select("   SELECT COUNT(*) AS TOTAL
+                                                            FROM RH_RESULTADOS_TEMPORADA
+                                                            WHERE TEMPORADAID = $tempid
+                                                            AND NIT = '$colaborador->nit'");
+            }
+
+            if (intval($total_evaluaciones[0]->total) > 0) {
                 
                 $temporadaid = $result[0]->temporadaid;
 
             }else{
 
+                // Reducir 1 al año 
+                $year = $year - 1;
+
                 $result = app('db')->select("   SELECT 
                                                     TEMPORADAID
                                                 FROM TEMPORADAS
+                                                WHERE NOMBRE LIKE '%$year%'
                                                 ORDER BY TEMPORADAID DESC");
 
                 $temporadaid = $result[0]->temporadaid;
 
             }
+
+            $colaborador->total_evaluaciones = $total_evaluaciones;
 
             $result_colaborador = Empleado::where('nit', $colaborador->nit)->first();
 
