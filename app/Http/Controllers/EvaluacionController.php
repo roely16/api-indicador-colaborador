@@ -92,6 +92,10 @@
 
                         $detalle_evaluacion->motivo = $str_motivos;
 
+                    }else{
+
+                        $detalle_evaluacion->motivo = null;
+
                     }
 
                 }
@@ -323,8 +327,6 @@
             // Eliminar los registros anteriores de la evaluación
             foreach ($request->items as $item) {
                 
-                //$detalle_evaluacion = DetalleEvaluacion::where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item["id"])->first();
-
                 $item = (object) $item;
 
                 $calificacion = 0;
@@ -349,11 +351,33 @@
 
                 }
 
+
+                    // Validar que existan motivos
+                    if (count($item->motivos) > 0) {
+                        
+                        $str_motivos = null;
+
+                        foreach ($item->motivos as $motivo) {
+                            
+                            $motivo = (object) $motivo;
+
+                            $str_motivos = $str_motivos . $motivo->descripcion . " \r\n";
+
+                        }
+
+                        $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item->id)->update(['motivo' => $str_motivos]);
+
+                    }else{
+
+                        $result = app('db')->table('rrhh_ind_evaluacion_detalle')->where('id_evaluacion', $request->id_evaluacion)->where('id_item', $item->id)->update(['motivo' => null]);
+
+                    }
+
+        
+
                 if ($item->data_calculo != null) {
 
                     $data_calculo = (object) $item->data_calculo;
-
-                    //return response()->json($data_calculo);
 
                     try {
 

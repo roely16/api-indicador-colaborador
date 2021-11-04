@@ -319,9 +319,15 @@
                         "descripcion" => 'Encuestas pendientes de vales: ' . $vales[0]->total
                     ];
 
-                }         
+                }     
 
             }
+
+            // if (count($motivos) <= 0) {
+                
+            //     $motivos = [];
+
+            // }
 
             $response = [
                 "calificacion" => 100 - (5 * $pendientes),
