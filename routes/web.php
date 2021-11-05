@@ -324,3 +324,6 @@ $router->post('/sgs_actualizar_porcentaje', 'EvaDetalleSGSController@actualizar_
 
 // Eliminar los responsables de una actividad
 $router->post('/sgs_eliminar_responsables', 'EvaDetalleSGSController@eliminar_responsables');
+
+// Eliminar actividad asignada a una evaluación
+$router->post('/sgs_eliminar_actividad_evaluacion', 'EvaDetalleSGSController@eliminar_actividad');

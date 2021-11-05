@@ -49,12 +49,34 @@
 
         }
 
-        public function detalles_evaluacion(Request $request){
+        public function detalle_evaluacion(Request $request){
+
+            $evaluacion = EvaluacionSGS::find($request->id);
+
+            $response = [
+                "status" => 200,
+                "evaluacion" => $evaluacion
+            ];
+
+            return response()->json($response);
 
         }
 
         public function editar_evaluacion(Request $request){
             
+            $evaluacion = EvaluacionSGS::find($request->id);
+            $evaluacion->nombre = $request->nombre;
+            $evaluacion->descripcion = $request->descripcion;
+            $evaluacion->mes = $request->mes;
+            $evaluacion->save();
+
+            $response = [
+                "status" => 200,
+                "evaluacion" => $evaluacion
+            ];
+
+            return response()->json($response);
+
         }
 
     }

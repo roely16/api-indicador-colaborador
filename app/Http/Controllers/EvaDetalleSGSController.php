@@ -124,7 +124,8 @@
                                                 ON T1.NIT = T2.RESPONSABLE
                                                 WHERE T1.CODAREA = '$area->codarea'
                                                 AND T1.NIT IN ($str_responsables)
-                                                AND T1.STATUS = 'A'");
+                                                AND T1.STATUS = 'A'
+                                                AND T2.ID_ACTIVIDAD_EVALUACION = $request->id_actividad");
 
                 foreach ($empleados as &$empleado) {
                     $empleado->check = false;
@@ -302,6 +303,14 @@
             ];
 
             return response()->json($response);
+
+        }
+
+        public function eliminar_actividad(Request $request){
+
+            $result = app('db')->table('RRHH_IND_SGS_EVA_ACT')->where('id', $request->id)->delete();
+
+            return response()->json($result);
 
         }
 
