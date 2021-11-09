@@ -18,6 +18,7 @@
 
             $usuario = $data["usuario2"];
             $month = $data["month"];
+            $codarea = $data["codarea"];
 
             /* Obtener los operados */
 
@@ -47,10 +48,24 @@
                                             AND RESULTADO = 'RECHAZADO'
                                             AND TIPO = 'SNC'");
 
+            /* Obtener los servicios no conformes del nuevo módulo */
+            $snc = app('db')->connection('catastrousr')->select("   SELECT 
+                                                                        *
+                                                                    FROM SNC_CONTROL
+                                                                    WHERE USUARIO = UPPER('$usuario')
+                                                                    AND TO_CHAR(FECHA_DOCUMENTO, 'YYYY-MM') = '$month'");
+
+            $total = 0;
+
+            foreach ($snc as $item) {
+                $item->descripcion = "Servicio No Conforme " . $item->documento . '-' . $item->anio;
+                $total++;
+            }            
+
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "snc" => $correcciones ? $correcciones[0]->correcciones : 0,
-                "motivos" => []
+                "snc" => $total,
+                "motivos" => $snc
             ];
 
             return $data;
@@ -90,10 +105,24 @@
                                         AND USUARIO = '$usuario'
                                         AND TIPO = 'SNC'");
 
+            /* Obtener los servicios no conformes del nuevo módulo */
+            $snc = app('db')->connection('catastrousr')->select("   SELECT 
+                                                                        *
+                                                                    FROM SNC_CONTROL
+                                                                    WHERE USUARIO = UPPER('$usuario')
+                                                                    AND TO_CHAR(FECHA_DOCUMENTO, 'YYYY-MM') = '$month'");
+
+            $total = 0;
+
+            foreach ($snc as &$item) {
+                $item->descripcion = "Servicio No Conforme " . $item->documento . '-' . $item->anio;
+                $total++;
+            }      
+
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "snc" => $correcciones ? $correcciones[0]->correcciones : 0,
-                "motivos" => []
+                "snc" => $total,
+                "motivos" => $snc
             ];
 
             return $data;
@@ -133,10 +162,24 @@
                                             AND RESULTADO = 'RECHAZADO'
                                             AND TIPO = 'SNC'");
 
+            /* Obtener los servicios no conformes del nuevo módulo */
+            $snc = app('db')->connection('catastrousr')->select("   SELECT 
+                                                                        *
+                                                                    FROM SNC_CONTROL
+                                                                    WHERE USUARIO = UPPER('$usuario')
+                                                                    AND TO_CHAR(FECHA_DOCUMENTO, 'YYYY-MM') = '$month'");
+
+            $total = 0;
+
+            foreach ($snc as $item) {
+                $item->descripcion = "Servicio No Conforme " . $item->documento . '-' . $item->anio;
+                $total++;
+            }      
+
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "snc" => $correcciones ? $correcciones[0]->correcciones : 0,
-                "motivos" => []
+                "snc" => $total,
+                "motivos" => $snc
             ];
 
             return $data;
@@ -144,6 +187,8 @@
         }
 
         public function s_atencion($data){
+
+            // ID del Proceo = 15
 
             $usuario = $data["usuario2"];
             $month = $data["month"];
@@ -170,10 +215,24 @@
                                             AND RESULTADO = 'INCOMPLETO'
                                             AND TIPO = 'SNC'");
 
+            /* Obtener los servicios no conformes del nuevo módulo */
+            $snc = app('db')->connection('catastrousr')->select("   SELECT 
+                                                                        *
+                                                                    FROM SNC_CONTROL
+                                                                    WHERE USUARIO = UPPER('$usuario')
+                                                                    AND TO_CHAR(FECHA_DOCUMENTO, 'YYYY-MM') = '$month'");
+
+            $total = 0;
+
+            foreach ($snc as $item) {
+                $item->descripcion = "Servicio No Conforme " . $item->documento . '-' . $item->anio;
+                $total++;
+            }            
+
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "snc" => $correcciones ? $correcciones[0]->correcciones : 0,
-                "motivos" => []
+                "snc" => $total,
+                "motivos" => $snc
             ];
 
             return $data;
@@ -213,10 +272,24 @@
                                         AND USUARIO = '$usuario'
                                         AND TIPO = 'SNC'");
 
+            /* Obtener los servicios no conformes del nuevo módulo */
+            $snc = app('db')->connection('catastrousr')->select("   SELECT 
+                                                                        *
+                                                                    FROM SNC_CONTROL
+                                                                    WHERE USUARIO = UPPER('$usuario')
+                                                                    AND TO_CHAR(FECHA_DOCUMENTO, 'YYYY-MM') = '$month'");
+
+            $total = 0;
+
+            foreach ($snc as $item) {
+                $item->descripcion = "Servicio No Conforme " . $item->documento . '-' . $item->anio;
+                $total++;
+            }            
+
             $data= [
                 "operados" => $result ? $result[0]->cantidad : 0,
-                "snc" => $correcciones ? $correcciones[0]->correcciones : 0,
-                "motivos" => []
+                "snc" => $total,
+                "motivos" => $snc
             ];
 
             return $data;
@@ -225,6 +298,10 @@
 
         public function s_convenios($data){
             
+        }
+
+        public function s_liquidaciones($data){
+
         }
 
     }

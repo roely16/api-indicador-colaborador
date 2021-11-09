@@ -157,7 +157,7 @@
                         "operados" => $detalle_evaluacion ?  $detalle_evaluacion->operados : null,
                         "snc" => $detalle_evaluacion ?  $detalle_evaluacion->snc : null,
                         "editable" => true,
-                        "show_snc" => true
+                        "show_snc" => true,
                     ];
 
                 }
@@ -188,7 +188,7 @@
                 "calificacion" => $result->func_calculo ? 100 - $porcentaje_resta : 100 - $porcentaje_resta,
                 "editable" => false,
                 "info_calculo" => "Cálculo realizado automáticamente.",
-                "motivos" => [],
+                "motivos" => $result->func_calculo ? $datos->motivos : [],
                 "data_calculo" => $datos
             ];
 

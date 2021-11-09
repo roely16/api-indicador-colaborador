@@ -158,7 +158,7 @@
 
                                     $criterio->motivo = $str_motivo;
 
-                                    $criterio->calificacion = $evaluacion->calificacion;
+                                    $criterio->calificacion = floor($evaluacion->calificacion);
 
                                     $criterio->calificacion = $criterio->calificacion > 100 ? 100 : $criterio->calificacion;
 
