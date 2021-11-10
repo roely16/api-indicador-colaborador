@@ -298,6 +298,37 @@
 
         public function s_convenios($data){
             
+            $usuario = $data["usuario2"];
+            $month = $data["month"];
+            $nit = $data["nit"];
+
+            // Obtener el nit de la persona
+            $operados = app('db')->connection('cobros')->select("   SELECT COUNT(*) AS TOTAL
+                                                                    FROM MCO_BITACORA
+                                                                    WHERE TO_CHAR(FECHA,'YYYY-MM') = '$month'
+                                                                    AND IDESTADO = 7
+                                                                    AND NIT = '$nit'");
+
+            $snc = app('db')->connection('catastrousr')->select("   SELECT *
+                                                                    FROM SNC_CONTROL
+                                                                    WHERE USUARIO = UPPER('$usuario')
+                                                                    AND TO_CHAR(FECHA_DOCUMENTO, 'YYYY-MM') = '$month'");
+
+            $total = 0;
+
+            foreach ($snc as $item) {
+                $item->descripcion = "Servicio No Conforme " . $item->documento . '-' . $item->anio;
+                $total++;
+            }            
+
+            $data= [
+                "operados" => $operados ? $operados[0]->total : 0,
+                "snc" => $total,
+                "motivos" => $snc
+            ];
+
+            return $data;
+
         }
 
         public function s_liquidaciones($data){
