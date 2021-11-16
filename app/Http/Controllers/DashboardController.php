@@ -20,6 +20,7 @@
             /* 
                 PERSONAS CON NOTAS POR DEFECTO
             */
+            
             $exclusiones = [
                 [
                     "nombre" => "Ing. Maynor Cárcamo",
@@ -213,8 +214,6 @@
 
                                     }
                                 }
-
-                                //$empleado->total_anual = 50;
 
                             }else{
 
