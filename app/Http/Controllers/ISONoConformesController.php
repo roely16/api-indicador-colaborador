@@ -333,6 +333,48 @@
 
         public function s_liquidaciones($data){
 
+            $usuario = $data["usuario"];
+            $usuario2 = $data["usuario2"];
+            $month = $data["month"];
+
+            $start = date('Ym01', strtotime($month));
+            $end = date('Ymt', strtotime($month));
+
+            $i = 0;
+            $motivos = [];
+
+            $operados = app('db')
+                            ->connection('portales')
+                            ->select("  SELECT *
+                                            FROM ISO_SAP_RFC_LIQUIDACIONES
+                                        WHERE ZFECHA_EXTRACCION BETWEEN $start AND $end
+                                        AND ZUSUARIO_EXTRACCION = '$usuario2'");
+
+
+            $snc = app('db')->connection('catastrousr')->select("   SELECT *
+                                                                    FROM SNC_CONTROL
+                                                                    WHERE (USUARIO = UPPER('$usuario') OR USUARIO = UPPER('$usuario2'))
+                                                                    AND TO_CHAR(FECHA_DOCUMENTO, 'YYYY-MM') = '$month'");
+
+            $total = 0;
+
+            $motivos = [];
+            foreach ($snc as $item) {
+
+                $motivos [] = ["descripcion" => "Servicio No Conforme " . $item->documento . '-' . $item->anio];
+
+                $total++;
+
+            }        
+
+            $data= [
+                "operados" => count($operados),
+                "snc" => $total,
+                "motivos" => $motivos
+            ];
+
+            return $data;
+
         }
 
     }

@@ -640,7 +640,8 @@
             $evaluacion = app('db')->select("   SELECT *
                                                 FROM RRHH_IND_SGS_EVALUACION
                                                 WHERE MES = '$month'
-                                                AND DELETED_AT IS NULL");
+                                                AND DELETED_AT IS NULL
+                                                ORDER BY ID DESC");
 
             // Buscar si en la evaluación el colaborador es tomado en cuenta
 
@@ -664,14 +665,17 @@
 
                 $evaluacion = $evaluacion[0];
 
-                $query = "SELECT PORCENTAJE
-                FROM RRHH_IND_SGS_EVA_ACT T1
-                INNER JOIN RRHH_IND_SGS_EVA_ACT_RESP T2
-                ON T1.ID = T2.ID_ACTIVIDAD_EVALUACION
-                WHERE ID_EVALUACION = $evaluacion->id
-                AND RESPONSABLE = '$colaborador->nit'";
+                $query = "  SELECT 
+                                PORCENTAJE
+                            FROM RRHH_IND_SGS_EVA_ACT T1
+                            INNER JOIN RRHH_IND_SGS_EVA_ACT_RESP T2
+                            ON T1.ID = T2.ID_ACTIVIDAD_EVALUACION
+                            WHERE ID_EVALUACION = $evaluacion->id
+                            AND RESPONSABLE = '$colaborador->nit'";
 
-                $actividades = app('db')->select("  SELECT PORCENTAJE, REALIZADA
+                $actividades = app('db')->select("  SELECT 
+                                                        PORCENTAJE, 
+                                                        REALIZADA
                                                     FROM RRHH_IND_SGS_EVA_ACT T1
                                                     INNER JOIN RRHH_IND_SGS_EVA_ACT_RESP T2
                                                     ON T1.ID = T2.ID_ACTIVIDAD_EVALUACION
@@ -680,15 +684,15 @@
 
                 if($actividades){
 
-                    $calificacion = 0;
+                    $calificacion = 100;
 
                     $colaborador->pendiente = false;
 
                     foreach ($actividades as $actividad) {
 
-                        if ($actividad->realizada == 'S') {
+                        if ($actividad->realizada != 'S') {
                             
-                            $calificacion += $actividad->porcentaje;
+                            $calificacion -= $actividad->porcentaje;
 
                         }
                     }
