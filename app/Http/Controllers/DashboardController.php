@@ -487,7 +487,8 @@
 
             }else{
 
-                $colaborador->calificacion = 0;
+                //$colaborador->calificacion = 0;
+                $colaborador->pendiente = true;
 
             }
 
@@ -512,6 +513,7 @@
             }else{
 
                 $colaborador->color = 'blue';
+                $colaborador->calificacion = 0;
 
             }
 
