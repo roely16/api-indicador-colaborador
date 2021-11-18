@@ -429,6 +429,12 @@
                     "type" => "success"
                 ];
 
+            }else{
+
+                $data = [
+                    "status" => 200
+                ];
+
             }
 
             return response()->json($data);

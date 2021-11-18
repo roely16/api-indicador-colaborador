@@ -327,3 +327,6 @@ $router->post('/sgs_eliminar_responsables', 'EvaDetalleSGSController@eliminar_re
 
 // Eliminar actividad asignada a una evaluación
 $router->post('/sgs_eliminar_actividad_evaluacion', 'EvaDetalleSGSController@eliminar_actividad');
+
+// Obtener el puntaje anual
+$router->post('/puntaje_anual', 'DashboardController@puntaje_anual');
