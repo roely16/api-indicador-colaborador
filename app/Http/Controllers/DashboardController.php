@@ -901,6 +901,7 @@
             }
 
             $empleado->stars = ($empleado->total_mensual * 5) / 100;
+            $empleado->total_anual = 0;
 
             return response()->json($empleado);
 
@@ -1035,77 +1036,147 @@
 
             $areas = $request->areas;
 
-            foreach ($areas as &$area) {
+            if ($request->areas) {
                 
-                $area = (object) $area;
-
-                foreach ($area->empleados as &$empleado) {
-                
-                    $empleado = (object) $empleado;
-
-                    $empleado->mes_inicio = date('Y-m', strtotime($empleado->fecha_ingreso));
+                foreach ($areas as &$area) {
                     
-                    if (strtotime($empleado->mes_inicio) > strtotime($year_start)) {
-                        
-                        $empleado->all_year = false;
+                    $area = (object) $area;
 
-                    }else{
-                        
-                        $empleado->all_year = true;
+                    foreach ($area->empleados as &$empleado) {
+                    
+                        $empleado = (object) $empleado;
 
+                        $empleado->mes_inicio = date('Y-m', strtotime($empleado->fecha_ingreso));
+                        
+                        if (strtotime($empleado->mes_inicio) > strtotime($year_start)) {
+                            
+                            $empleado->all_year = false;
+
+                        }else{
+                            
+                            $empleado->all_year = true;
+
+                        }
+
+                        $months = [];
+                        $length = 2;
+                        $type = 'd';
+                        $char = 0;
+                        $format = "%{$char}{$length}{$type}";
+
+                        $split_fecha_ingreso = explode("-", $empleado->mes_inicio);
+                        $suma_promedio = 0;
+
+                        for ($i = $empleado->all_year ? 1 : intval($split_fecha_ingreso[1]); $i <= intval($current_month); $i++) { 
+                            
+                            $month_year = $year . '-' . sprintf($format, $i); 
+
+                            /* 
+                                Ejecutar el job por cada colaborador y por cada mes del cual se desea conocer la nota mensual
+                            */
+
+                            $data = (object) [
+                                "date" => $month_year,
+                                "nit" => $empleado->nit,
+                                "codarea" => null
+                            ];
+
+                            \Queue::push(new EvaluacionJob($data));
+
+                            $request_evaluacion = new Request();
+
+                            $request_evaluacion->replace([
+                                "nit" => $empleado->nit,
+                                "fecha" => $month_year
+                            ]);
+
+                            $result_evaluacion = $this->indicador_individual($request_evaluacion);
+
+                            $data_result = $result_evaluacion->getData();
+
+                            $empleado->result_evaluacion = $result_evaluacion->getData();
+
+                            $months [] = $month_year . ': ' . $data_result->total_mensual;
+
+                            $suma_promedio += $data_result->total_mensual;
+                        }
+
+                        $empleado->dates = $months;
+                        $empleado->loading_anual = false;
+                        $empleado->total_anual = $suma_promedio / count($months);
+                        
                     }
 
-                    $months = [];
-                    $length = 2;
-                    $type = 'd';
-                    $char = 0;
-                    $format = "%{$char}{$length}{$type}";
-
-                    $split_fecha_ingreso = explode("-", $empleado->mes_inicio);
-                    $suma_promedio = 0;
-
-                    for ($i = $empleado->all_year ? 1 : intval($split_fecha_ingreso[1]); $i <= intval($current_month); $i++) { 
-                        
-                        $month_year = $year . '-' . sprintf($format, $i); 
-
-                        /* 
-                            Ejecutar el job por cada colaborador y por cada mes del cual se desea conocer la nota mensual
-                        */
-
-                        $data = (object) [
-                            "date" => $month_year,
-                            "nit" => $empleado->nit,
-                            "codarea" => null
-                        ];
-
-                        \Queue::push(new EvaluacionJob($data));
-
-                        $request_evaluacion = new Request();
-
-                        $request_evaluacion->replace([
-                            "nit" => $empleado->nit,
-                            "fecha" => $month_year
-                        ]);
-
-                        $result_evaluacion = $this->indicador_individual($request_evaluacion);
-
-                        $data_result = $result_evaluacion->getData();
-
-                        $empleado->result_evaluacion = $result_evaluacion->getData();
-
-                        $months [] = $month_year . ': ' . $data_result->total_mensual;
-
-                        $suma_promedio += $data_result->total_mensual;
-                    }
-
-                    $empleado->dates = $months;
-                    $empleado->loading_anual = false;
-                    $empleado->total_anual = $suma_promedio / count($months);
-                    
                 }
 
+                return response()->json($areas);
+
+            }elseif($request->empleado){
+                
+                $empleado = (object) $request->empleado;
+
+                $empleado->mes_inicio = date('Y-m', strtotime($empleado->fecha_ingreso));
+                        
+                if (strtotime($empleado->mes_inicio) > strtotime($year_start)) {
+                    
+                    $empleado->all_year = false;
+
+                }else{
+                    
+                    $empleado->all_year = true;
+
+                }
+
+                $months = [];
+                $length = 2;
+                $type = 'd';
+                $char = 0;
+                $format = "%{$char}{$length}{$type}";
+
+                $split_fecha_ingreso = explode("-", $empleado->mes_inicio);
+                $suma_promedio = 0;
+
+                for ($i = $empleado->all_year ? 1 : intval($split_fecha_ingreso[1]); $i <= intval($current_month); $i++) { 
+                    
+                    $month_year = $year . '-' . sprintf($format, $i); 
+
+                    /* 
+                        Ejecutar el job por cada colaborador y por cada mes del cual se desea conocer la nota mensual
+                    */
+
+                    $data = (object) [
+                        "date" => $month_year,
+                        "nit" => $empleado->nit,
+                        "codarea" => null
+                    ];
+
+                    \Queue::push(new EvaluacionJob($data));
+
+                    $request_evaluacion = new Request();
+
+                    $request_evaluacion->replace([
+                        "nit" => $empleado->nit,
+                        "fecha" => $month_year
+                    ]);
+
+                    $result_evaluacion = $this->indicador_individual($request_evaluacion);
+
+                    $data_result = $result_evaluacion->getData();
+
+                    $empleado->result_evaluacion = $result_evaluacion->getData();
+
+                    $months [] = $month_year . ': ' . $data_result->total_mensual;
+
+                    $suma_promedio += $data_result->total_mensual;
+                }
+
+                $empleado->dates = $months;
+                $empleado->loading_anual = false;
+                $empleado->total_anual = $suma_promedio / count($months);
+                
+                return response()->json($empleado);
+
             }
-            return response()->json($areas);
 
         }
 
