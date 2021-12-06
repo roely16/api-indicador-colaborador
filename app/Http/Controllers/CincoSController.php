@@ -21,7 +21,7 @@
 
             // Obtener todas las observaciones
 
-            $observaciones = app('db')->select("     SELECT
+            $observaciones = app('db')->select("    SELECT
                                                         CORRELATIVO AS DESCRIPCION
                                                     FROM CERT_MAESTRO
                                                     WHERE ID_METODOLOGIA = 1
@@ -76,12 +76,14 @@
 
              // Obtener las observaciones
 
-             $observaciones = app('db')->select("SELECT 
-                                                    CORRELATIVO AS DESCRIPCION
-                                                FROM OBSERVACIONES_5S
-                                                WHERE NIT = '$nit'
-                                                AND FUENTE = 'AUDITORIA'
-                                                AND TO_CHAR(FECHA_OBS, 'YYYY-MM') = '$month'");
+             $observaciones = app('db')->select("   SELECT
+                                                        CORRELATIVO AS DESCRIPCION
+                                                    FROM CERT_MAESTRO
+                                                    WHERE ID_METODOLOGIA = 1
+                                                    AND TO_CHAR(FECHA_OBSERVACION, 'YYYY-MM') = '$month'
+                                                    AND ESTADO = 'A'
+                                                    AND ID_FUENTE = $id_fuente
+                                                    AND NIT = '$nit'");
             $total = 0;
 
             foreach ($observaciones as &$observacion) {
@@ -128,12 +130,15 @@
 
             // Obtener las observaciones
 
-            $observaciones = app('db')->select("SELECT 
+            $observaciones = app('db')->select("SELECT
                                                     CORRELATIVO AS DESCRIPCION
-                                                FROM OBSERVACIONES_5S
-                                                WHERE NIT = '$nit'
-                                                AND FUENTE = 'COLABORADOR'
-                                                AND TO_CHAR(FECHA_OBS, 'YYYY-MM') = '$month'");
+                                                FROM CERT_MAESTRO
+                                                WHERE ID_METODOLOGIA = 1
+                                                AND TO_CHAR(FECHA_OBSERVACION, 'YYYY-MM') = '$month'
+                                                AND ESTADO = 'A'
+                                                AND ID_FUENTE = $id_fuente
+                                                AND NIT = '$nit'");
+                                                
             $total = 0;
 
             foreach ($observaciones as &$observacion) {

@@ -230,6 +230,8 @@
                                 $criterio->color = $result["color"];
                                 $criterio->calificacion = $result["calificacion"];
                                 $criterio->pendiente = $result["pendiente"];
+                                $criterio->motivo = $result["motivo"];
+
 
                                 $criterio->nota_individual = round(($valor_criterio * $criterio->calificacion) / 100, 2);
                                 $empleado->total_mensual += round(($valor_criterio * $criterio->calificacion) / 100, 2);
@@ -448,7 +450,7 @@
 
             }
 
-            
+            $colaborador->motivo = null;
 
             return $colaborador;
 
@@ -519,6 +521,8 @@
 
             }
 
+            $colaborador->motivo = null;
+
             return $colaborador;
 
         }
@@ -529,32 +533,27 @@
             $month = $data["month"];
 
             $colaborador = $data["colaborador"];
+            $criterio = $data["criterio"];
 
             $result = app('db')->select("   SELECT 
-                                                COUNT(*) AS TOTAL 
-                                            FROM RC_RECORD
-                                            WHERE NIT = '$colaborador->nit'
-                                            AND ID_TIPO IN (7,8)
-                                            AND TO_CHAR(FECHA, 'YYYY-MM') = '$month'");
+                                                T1.*, T2.NOMBRE AS TIPO
+                                            FROM RC_RECORD T1
+                                            INNER JOIN RC_TIPO T2
+                                            ON T1.ID_TIPO = T2.ID_TIPO
+                                            WHERE T1.NIT = '$colaborador->nit'
+                                            AND T1.ID_TIPO IN (7,8)
+                                            AND TO_CHAR(T1.FECHA, 'YYYY-MM') = '$month'
+                                            AND T1.ELIMINADO = 0");
 
-            $colaborador->calificacion = 100;
+            $motivos = null;
 
-            if ($result) {
+            foreach ($result as $item) {
                 
-                $total = $result[0]->total;
-
-                if ($total) {
-                    
-                    // Bajar un 18.75% equivalente al 3% 
-                    $colaborador->calificacion = 100 - (18.75 * $total);
-
-                }else{
-
-                    $colaborador->calificacion = 100;
-
-                }
+                $motivos = $motivos . $item->tipo . ' ';    
 
             }
+
+            $colaborador->calificacion = 100 - (3 * count($result));
 
             if ($colaborador->calificacion >= 0 && $colaborador->calificacion < 60) {
 
@@ -569,6 +568,8 @@
                 $colaborador->color = 'green';
 
             }
+
+            $colaborador->motivo = $motivos;
 
             return $colaborador;
 

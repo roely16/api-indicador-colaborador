@@ -353,7 +353,7 @@
 
 
                     // Validar que existan motivos
-                    if (count($item->motivos) > 0) {
+                    if (isset($item->motivos)) {
                         
                         $str_motivos = null;
 
@@ -375,7 +375,7 @@
 
         
 
-                if ($item->data_calculo != null) {
+                if (isset($item->data_calculo)) {
 
                     $data_calculo = (object) $item->data_calculo;
 
