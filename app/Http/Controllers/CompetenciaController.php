@@ -37,7 +37,8 @@
                                             FROM RH_EMPLEADO_PERFIL T1 
                                             INNER JOIN RRHH_PERFIL T2
                                             ON T1.ID_PERFIL = T2.ID
-                                            WHERE T1.NIT = '$request->nit'");
+                                            WHERE T1.NIT = '$request->nit'
+                                            AND T2.DELETED_AT IS NULL");
             
             $data = [
                 "empleado" => $empleado,
