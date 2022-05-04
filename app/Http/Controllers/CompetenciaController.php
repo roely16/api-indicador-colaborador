@@ -38,7 +38,8 @@
                                             INNER JOIN RRHH_PERFIL T2
                                             ON T1.ID_PERFIL = T2.ID
                                             WHERE T1.NIT = '$request->nit'
-                                            AND T2.DELETED_AT IS NULL");
+                                            AND T2.DELETED_AT IS NULL
+                                        ");
             
             $data = [
                 "empleado" => $empleado,
@@ -214,7 +215,7 @@
             }
 
             $evaluacion->tipos_competencias = $tipos_competencias;
-            $evaluacion->perfil = $perfil ? $perfil->id : null;
+            $evaluacion->perfil = $perfil ? $perfil->id : $evaluacion->id_perfil;
             $evaluacion->nombre_perfil = $perfil ? $perfil->nombre : null;
             $evaluacion->perfiles = $perfiles;
 
@@ -310,20 +311,24 @@
                                                         TO_CHAR(T1.CREATED_AT, 'DD/MM/YYYY HH24:MI:SS') AS CREATED_AT,
                                                         T3.DESCRIPCION AS AREA,
                                                         T2.CODAREA,
-                                                        T1.ID_PERFIL
+                                                        T1.ID_PERFIL, 
+                                                        T4.NOMBRE AS PERFIL
                                                     FROM RRHH_IND_EVA_COMPETENCIA T1
                                                     INNER JOIN RH_EMPLEADOS T2
                                                     ON T1.ID_PERSONA = T2.NIT
                                                     INNER JOIN RH_AREAS T3
                                                     ON T2.CODAREA = T3.CODAREA
+                                                    INNER JOIN RRHH_PERFIL T4
+                                                    ON T1.ID_PERFIL = T4.ID
                                                     WHERE T1.POSPONER IS NULL
+                                                    AND T4.DELETED_AT IS NULL
                                                     ORDER BY T1.ID DESC");
 
                 foreach ($evaluaciones as &$evaluacion) {
                                     
-                    $perfil = Perfil::find($evaluacion->id_perfil);
+                    // $perfil = Perfil::find($evaluacion->id_perfil);
 
-                    $evaluacion->perfil = $perfil ? $perfil->nombre : null;
+                    // $evaluacion->perfil = $perfil ? $perfil->nombre : null;
 
                 }
 
